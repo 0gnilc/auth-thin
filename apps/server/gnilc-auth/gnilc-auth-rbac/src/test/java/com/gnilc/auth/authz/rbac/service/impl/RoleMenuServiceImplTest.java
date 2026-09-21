@@ -14,7 +14,6 @@ import com.gnilc.auth.authz.rbac.service.MenuService;
 import com.gnilc.auth.authz.rbac.service.RoleService;
 import com.gnilc.common.exception.IllegalConditionException;
 import com.gnilc.common.exception.InvalidArgumentException;
-import com.gnilc.common.i18n.I18nMessageService;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.support.ResourceBundleMessageSource;
 
 import java.util.Collection;
 import java.util.List;
@@ -62,14 +60,10 @@ class RoleMenuServiceImplTest {
                     new MapperBuilderAssistant(new MybatisConfiguration(), "role-menu-service-test"),
                     RoleMenuBo.class);
         }
-        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
-        source.setBasename("i18n/rbac/messages");
-        source.setDefaultEncoding("UTF-8");
         roleMenus = spy(new RoleMenuServiceImpl(
                 menuService,
                 roleService,
-                eventPublisher,
-                new I18nMessageService(source, "en-US")));
+                eventPublisher));
         lenient().doAnswer(invocation -> new LambdaQueryChainWrapper<>(
                 roleMenusDao, Wrappers.lambdaQuery(RoleMenuBo.class)))
                 .when(roleMenus).lambdaQuery();
@@ -120,7 +114,7 @@ class RoleMenuServiceImplTest {
 
         assertThatThrownBy(() -> roleMenus.saveRoleMenus(dto))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in role permissions and menus cannot be modified.");
+                .hasMessage("内置角色的权限和菜单不能修改。");
         verify(roleMenus, never()).lambdaQuery();
         verify(roleMenus, never()).saveBatch(anyCollection());
     }
@@ -133,7 +127,7 @@ class RoleMenuServiceImplTest {
 
         assertThatThrownBy(() -> roleMenus.saveRoleMenus(dto))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("A menu must be selected.");
+                .hasMessage("请选择菜单。");
 
         verify(roleMenus, never()).lambdaQuery();
         verify(roleMenus, never()).saveBatch(anyCollection());

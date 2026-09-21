@@ -2,8 +2,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { $t } from '@vben/locales';
-
 import { VbenButton } from '@vben-core/shadcn-ui';
 
 import { useQRCode } from '@vueuse/integrations/useQRCode';
@@ -72,13 +70,11 @@ function goToLogin() {
 <template>
   <div>
     <Title>
-      <slot name="title">
-        {{ title || $t('authentication.welcomeBack') }} 📱
-      </slot>
+      <slot name="title"> {{ title || '欢迎回来' }} 📱 </slot>
       <template #desc>
         <span class="text-muted-foreground">
           <slot name="subTitle">
-            {{ subTitle || $t('authentication.qrcodeSubtitle') }}
+            {{ subTitle || '请用手机扫描二维码登录' }}
           </slot>
         </span>
       </template>
@@ -88,7 +84,7 @@ function goToLogin() {
       <img :src="qrcode" alt="qrcode" class="w-1/2" />
       <p class="mt-4 text-sm text-muted-foreground">
         <slot name="description">
-          {{ description || $t('authentication.qrcodePrompt') }}
+          {{ description || "扫码后点击 '确认'，即可完成登录" }}
         </slot>
       </p>
     </div>
@@ -99,7 +95,7 @@ function goToLogin() {
       variant="outline"
       @click="goToLogin()"
     >
-      {{ $t('common.back') }}
+      返回
     </VbenButton>
   </div>
 </template>

@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
-
 /** 菜单管理视图，包含导航配置及可选子菜单。 */
 @Data
 public class MenuVo implements Serializable {
@@ -83,7 +82,7 @@ public class MenuVo implements Serializable {
     private Integer order;
     /** 导航时附带的查询参数，以 JSON 对象文本保存。 */
     private String query;
-    /** 菜单显示标题，可使用对应的本地化消息键。 */
+    /** 菜单显示标题，直接展示存储的文本。 */
     private String title;
     /** 当前查询结果中的子菜单列表。 */
     private List<MenuVo> children = Lists.newArrayList();

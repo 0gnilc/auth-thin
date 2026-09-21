@@ -30,18 +30,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 /** 验证内置权限保护、原文字符串约束及删除时关系清理，非法输入不得先持久化。 */
-class PermissionServiceImplTest extends RbacMessageTestSupport {
+class PermissionServiceImplTest {
     @Test
-    void createPermissionRejectsMissingInformationWithTheDefaultLocale() {
+    void createPermissionRejectsMissingInformationWithChineseMessages() {
         PermissionServiceImpl permissions = new PermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(UserRoleService.class),
-                mock(RolePermissionService.class),
-                messages());
+                mock(RolePermissionService.class));
 
         assertThatThrownBy(() -> permissions.createPermission(null))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Permission information is required.");
+                .hasMessage("权限信息不能为空。");
     }
 
     @Test
@@ -49,8 +48,7 @@ class PermissionServiceImplTest extends RbacMessageTestSupport {
         PermissionServiceImpl permissions = spy(new PermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(UserRoleService.class),
-                mock(RolePermissionService.class),
-                messages()));
+                mock(RolePermissionService.class)));
         PermissionBo builtIn = new PermissionBo();
         builtIn.setId(1L);
         builtIn.setBuiltIn(true);
@@ -60,10 +58,10 @@ class PermissionServiceImplTest extends RbacMessageTestSupport {
 
         assertThatThrownBy(() -> permissions.updatePermission(update))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in permissions cannot be modified.");
+                .hasMessage("内置权限不能修改。");
         assertThatThrownBy(() -> permissions.removePermission(1L))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in permissions cannot be deleted.");
+                .hasMessage("内置权限不能删除。");
     }
 
     @ParameterizedTest(name = "rejects blank required field {0}")
@@ -153,8 +151,7 @@ class PermissionServiceImplTest extends RbacMessageTestSupport {
         PermissionServiceImpl permissions = spy(new PermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(UserRoleService.class),
-                rolePermissions,
-                messages()));
+                rolePermissions));
         PermissionBo permission = new PermissionBo();
         permission.setId(2L);
         String originalCode = "\uD83D\uDE00".repeat(255);
@@ -176,8 +173,7 @@ class PermissionServiceImplTest extends RbacMessageTestSupport {
         PermissionServiceImpl service = spy(new PermissionServiceImpl(
                 publisher,
                 mock(UserRoleService.class),
-                mock(RolePermissionService.class),
-                messages()));
+                mock(RolePermissionService.class)));
         doAnswer(invocation -> {
             ((PermissionBo) invocation.getArgument(0)).setId(20L);
             return true;
@@ -215,19 +211,19 @@ class PermissionServiceImplTest extends RbacMessageTestSupport {
 
     private static Stream<Arguments> permissionRequiredFields() {
         return Stream.of(
-                Arguments.of("code", "Permission code is required."),
-                Arguments.of("name", "Permission name is required."),
-                Arguments.of("targetIdentifier", "Access target identifier is required."));
+                Arguments.of("code", "权限编码不能为空。"),
+                Arguments.of("name", "权限名称不能为空。"),
+                Arguments.of("targetIdentifier", "访问目标标识不能为空。"));
     }
 
     private static Stream<Arguments> permissionLengthBoundaries() {
         return Stream.of(
-                Arguments.of("code", 255, "p", "Permission code must not exceed 255 characters."),
-                Arguments.of("name", 255, "\uD83D\uDE00", "Permission name must not exceed 255 characters."),
+                Arguments.of("code", 255, "p", "权限编码不能超过 255 个字符。"),
+                Arguments.of("name", 255, "\uD83D\uDE00", "权限名称不能超过 255 个字符。"),
                 Arguments.of("targetIdentifier", 500, "t",
-                        "Access target identifier must not exceed 500 characters."),
-                Arguments.of("targetQualifier", 100, "q", "Target qualifier must not exceed 100 characters."),
-                Arguments.of("remark", 500, "m", "Permission description must not exceed 500 characters."));
+                        "访问目标标识不能超过 500 个字符。"),
+                Arguments.of("targetQualifier", 100, "q", "目标限定符不能超过 100 个字符。"),
+                Arguments.of("remark", 500, "m", "权限描述不能超过 500 个字符。"));
     }
 
     private static Stream<Arguments> exactPermissionRemarks() {

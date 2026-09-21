@@ -1,6 +1,6 @@
 # gnilc-auth Server
 
-基于 Spring Boot 3 / Java 17，提供管理员身份、Redis 会话、认证授权、RBAC 和动态国际化。
+基于 Spring Boot 3 / Java 17，提供管理员身份、Redis 会话、认证授权、RBAC，界面业务提示固定使用简体中文。
 
 - `gnilc-bootstrap`：启动入口 `com.gnilc.bootstrap.AuthBootApplication` 与环境配置。
 - `gnilc-core`：`com.gnilc.core` 下的管理员业务和应用适配。

@@ -9,10 +9,6 @@ const api = vi.hoisted(() => ({
   login: vi.fn(),
   logout: vi.fn(),
 }));
-const dynamicMessages = vi.hoisted(() => ({
-  clear: vi.fn(),
-  load: vi.fn(),
-}));
 const router = vi.hoisted(() => ({
   currentRoute: { value: { fullPath: '/system/admin' } },
   push: vi.fn(),
@@ -41,11 +37,7 @@ vi.mock('@vben/stores', () => ({
   useUserStore: () => stores.user,
 }));
 vi.mock('#/api/core', () => api);
-vi.mock('#/locales/dynamic', () => ({
-  clearDynamicMessages: dynamicMessages.clear,
-  loadDynamicMessages: dynamicMessages.load,
-}));
-vi.mock('#/locales', () => ({ $t: (key: string) => key }));
+
 vi.mock('element-plus', () => ({ ElNotification: vi.fn() }));
 
 describe('administrator session state', () => {
@@ -102,7 +94,6 @@ describe('administrator session state', () => {
       username: 'admin',
     });
     api.getMenuAccessCodes.mockResolvedValue(['system:admin:create']);
-    dynamicMessages.load.mockResolvedValue(undefined);
     const auth = useAuthStore();
 
     await expect(
@@ -135,7 +126,6 @@ describe('administrator session state', () => {
 
     expect(stores.resetAllStores).toHaveBeenCalledOnce();
     expect(stores.access.setLoginExpired).toHaveBeenCalledWith(false);
-    expect(dynamicMessages.clear).toHaveBeenCalledOnce();
     expect(router.push).not.toHaveBeenCalled();
     expect(auth.loginLoading).toBe(false);
   });
@@ -148,7 +138,6 @@ describe('administrator session state', () => {
 
     expect(api.logout).toHaveBeenCalledWith('refresh-token');
     expect(stores.resetAllStores).toHaveBeenCalledOnce();
-    expect(dynamicMessages.clear).toHaveBeenCalledOnce();
     expect(router.replace).toHaveBeenCalledWith({
       path: '/auth/login',
       query: { redirect: encodeURIComponent('/system/admin') },

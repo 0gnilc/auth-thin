@@ -18,7 +18,7 @@ describe('database release inventory', () => {
           resolve(root, 'apps/server/deploy', name),
           { recursive: true },
         );
-      expect(checkDatabaseManifest(root).baseline.id).toBe('baseline-1');
+      expect(checkDatabaseManifest(root).baseline.id).toBe('baseline-2');
       writeFileSync(
         resolve(root, 'apps/server/deploy/migrations/unlisted.sql'),
         'SELECT 1;',

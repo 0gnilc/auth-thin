@@ -10,7 +10,6 @@ import { BasicLayout, Notification, UserDropdown } from '@vben/layouts';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
@@ -32,7 +31,7 @@ const menus = computed(() => [
       router.push({ name: 'Profile' });
     },
     icon: 'lucide:user',
-    text: $t('auth.profile'),
+    text: '个人中心',
   },
 ]);
 

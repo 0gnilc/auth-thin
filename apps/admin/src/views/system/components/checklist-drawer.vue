@@ -14,7 +14,6 @@ import {
 } from 'element-plus';
 
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
-import { $t } from '#/locales';
 
 /** 角色、权限等授权列表中的可勾选选项。 */
 export interface ChecklistOption {
@@ -39,7 +38,7 @@ export interface ChecklistDrawerData {
   }>;
   /** 提交当前全部已选资源标识并保存授权。 */
   save: (selected: string[]) => Promise<void>;
-  /** 已本地化的授权抽屉标题。 */
+  /** 授权抽屉显示标题。 */
   title: string;
 }
 
@@ -130,9 +129,7 @@ function remove(option: ChecklistOption) {
     <!-- 已选项概览。 -->
     <section class="shrink-0 border-b border-border pb-4">
       <div class="mb-3 flex items-center justify-between gap-3">
-        <h3 class="text-sm font-medium">
-          {{ $t('rbacCommon.selected') }}
-        </h3>
+        <h3 class="text-sm font-medium">已选择</h3>
         <span class="text-xs text-muted-foreground">
           {{ selected.length }} / {{ options.length }}
         </span>
@@ -149,9 +146,7 @@ function remove(option: ChecklistOption) {
           <code class="ml-1 text-xs opacity-70">{{ option.value }}</code>
         </ElTag>
       </div>
-      <span v-else class="text-sm text-muted-foreground">
-        {{ $t('rbacCommon.noneSelected') }}
-      </span>
+      <span v-else class="text-sm text-muted-foreground"> 暂未选择 </span>
     </section>
 
     <!-- 支持关键词过滤的候选项列表。 -->
@@ -159,7 +154,7 @@ function remove(option: ChecklistOption) {
       <ElInput
         v-model="filter"
         clearable
-        :placeholder="$t('rbacCommon.filterPlaceholder')"
+        placeholder="筛选可选项"
         class="mb-4 shrink-0"
       >
         <template #prefix>
@@ -197,11 +192,7 @@ function remove(option: ChecklistOption) {
             </span>
           </ElCheckbox>
         </ElCheckboxGroup>
-        <ElEmpty
-          v-else
-          :description="$t('rbacCommon.noMatches')"
-          :image-size="72"
-        />
+        <ElEmpty v-else description="没有匹配项" :image-size="72" />
       </div>
     </section>
   </Drawer>

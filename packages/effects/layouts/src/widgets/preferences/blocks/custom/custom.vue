@@ -4,10 +4,6 @@ import type {
   CustomPreferencesRecord,
 } from '@vben/preferences';
 
-import { computed } from 'vue';
-
-import { $t } from '@vben/locales';
-
 import InputItem from '../input-item.vue';
 import NumberFieldItem from '../number-field-item.vue';
 import SelectItem from '../select-item.vue';
@@ -17,7 +13,7 @@ defineOptions({
   name: 'PreferenceCustomFields',
 });
 
-const props = defineProps<{
+defineProps<{
   fields: Array<CustomPreferencesField>;
   values: CustomPreferencesRecord;
 }>();
@@ -51,33 +47,15 @@ function handleNumberUpdate(key: string, value: number | undefined) {
 function handleStringUpdate(key: string, value: string | undefined) {
   handleUpdate(key, value ?? '');
 }
-
-const resolvedFields = computed(() => {
-  return props.fields.map((field) => {
-    return {
-      ...field,
-      label: $t(field.label),
-      options:
-        field.component === 'select'
-          ? field.options.map((option) => ({
-              ...option,
-              label: $t(option.label),
-            }))
-          : undefined,
-      placeholder: field.placeholder ? $t(field.placeholder) : '',
-      tip: field.tip ? $t(field.tip) : '',
-    };
-  });
-});
 </script>
 
 <template>
-  <template v-for="field in resolvedFields" :key="field.key">
+  <template v-for="field in fields" :key="field.key">
     <SwitchItem
       v-if="field.component === 'switch'"
       :disabled="field.disabled"
       :model-value="Boolean(values[field.key])"
-      :tip="field.tip"
+      :tip="field.tip || ''"
       v-bind="field.componentProps"
       @update:model-value="handleBooleanUpdate(field.key, $event)"
     >
@@ -87,8 +65,8 @@ const resolvedFields = computed(() => {
       v-else-if="field.component === 'number'"
       :disabled="field.disabled"
       :model-value="resolveNumberValue(values[field.key])"
-      :placeholder="field.placeholder"
-      :tip="field.tip"
+      :placeholder="field.placeholder || ''"
+      :tip="field.tip || ''"
       v-bind="field.componentProps"
       @update:model-value="handleNumberUpdate(field.key, $event)"
     >
@@ -99,8 +77,8 @@ const resolvedFields = computed(() => {
       :disabled="field.disabled"
       :items="field.options"
       :model-value="String(values[field.key] ?? '')"
-      :placeholder="field.placeholder"
-      :tip="field.tip"
+      :placeholder="field.placeholder || ''"
+      :tip="field.tip || ''"
       v-bind="field.componentProps"
       @update:model-value="handleStringUpdate(field.key, $event)"
     >
@@ -110,8 +88,8 @@ const resolvedFields = computed(() => {
       v-else
       :disabled="field.disabled"
       :model-value="String(values[field.key] ?? '')"
-      :placeholder="field.placeholder"
-      :tip="field.tip"
+      :placeholder="field.placeholder || ''"
+      :tip="field.tip || ''"
       v-bind="field.componentProps"
       @update:model-value="handleStringUpdate(field.key, $event)"
     >

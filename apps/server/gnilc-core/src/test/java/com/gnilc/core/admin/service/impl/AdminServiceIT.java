@@ -1,6 +1,5 @@
 package com.gnilc.core.admin.service.impl;
 
-import com.gnilc.auth.authz.rbac.entity.bo.RoleBo;
 import com.gnilc.auth.authz.rbac.entity.dto.RoleDto;
 import com.gnilc.auth.authn.context.DefaultAccessPrincipal;
 import com.gnilc.common.exception.AuthenticationFailedException;
@@ -102,11 +101,11 @@ class AdminServiceIT {
         assertThat(admins.getAdmin(stored.getId())).isNull();
         assertThatThrownBy(() -> admins.login("alice", "Strong#123"))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
         assertThat(sessions.validateAccessToken(token.getAccessToken())).isNull();
         assertThatThrownBy(() -> admins.refresh(token.getRefreshToken()))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
         assertThat(sessions.validateAccessToken(otherToken.getAccessToken()))
                 .isEqualTo(admins.getAdminByUsername("other-admin").getUserId());
         assertThat(admins.refresh(otherToken.getRefreshToken())).isNotNull();
@@ -150,15 +149,15 @@ class AdminServiceIT {
                 .containsExactlyInAnyOrder("admin", "reviewer");
         assertThatThrownBy(() -> admins.login("bob", "Changed#456"))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
         assertThat(sessions.validateAccessToken(firstBobSession.getAccessToken())).isNull();
         assertThat(sessions.validateAccessToken(secondBobSession.getAccessToken())).isNull();
         assertThatThrownBy(() -> admins.refresh(firstBobSession.getRefreshToken()))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
         assertThatThrownBy(() -> admins.refresh(secondBobSession.getRefreshToken()))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
         assertThat(sessions.validateAccessToken(enabledSession.getAccessToken()))
                 .isEqualTo(admins.getAdminByUsername("still-enabled").getUserId());
         assertThat(admins.refresh(enabledSession.getRefreshToken())).isNotNull();
@@ -174,7 +173,7 @@ class AdminServiceIT {
         blankPassword.setPassword("  ");
         assertThatThrownBy(() -> admins.updateAdmin(blankPassword))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessageContaining("Password must be 8 to 32 characters");
+                .hasMessageContaining("密码长度必须为 8 到 32 个字符");
         assertThat(admins.login("password-kept", "Initial#123")).isNotNull();
 
         AdminDto nullPassword = new AdminDto();
@@ -272,7 +271,7 @@ class AdminServiceIT {
     void createRejectsEveryPasswordComplexityBoundary(String caseName, String password) {
         assertThatThrownBy(() -> admins.createAdmin(admin("invalid-" + caseName, password, null)))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessageContaining("Password must be 8 to 32 characters");
+                .hasMessageContaining("密码长度必须为 8 到 32 个字符");
     }
 
     @Test
@@ -287,7 +286,7 @@ class AdminServiceIT {
         blank.setHomePath("  ");
         assertThatThrownBy(() -> admins.createAdmin(blank))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Home path format is invalid.");
+                .hasMessage("默认首页路径格式无效。");
     }
 
     @Test

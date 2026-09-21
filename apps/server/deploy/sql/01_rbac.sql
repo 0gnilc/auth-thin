@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS az_menu (
     open_in_new_window tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在新窗口打开目标。0 表示否或停用，1 表示是或启用',
     `order` int NOT NULL DEFAULT '999' COMMENT '菜单显示排序值，数值越小越靠前',
     query json DEFAULT NULL COMMENT '导航附带的 JSON 查询参数对象；NULL 表示未配置',
-    title varchar(255) NOT NULL COMMENT '菜单显示标题，可使用对应的本地化消息键',
+    title varchar(255) NOT NULL COMMENT '菜单显示标题，直接展示存储的文本',
     built_in tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否为系统维护的内置菜单：0 否、1 是',
     PRIMARY KEY (id),
     KEY idx_pid (pid),

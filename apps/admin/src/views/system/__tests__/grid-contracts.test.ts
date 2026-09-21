@@ -4,7 +4,6 @@ import { flushPromises, shallowMount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminPage from '../admin/index.vue';
-import I18nMessagePage from '../i18n-message/index.vue';
 import MenuPage from '../menu/index.vue';
 import PermissionPage from '../permission/index.vue';
 import RolePage from '../role/index.vue';
@@ -12,8 +11,6 @@ import RolePage from '../role/index.vue';
 const runtime = vi.hoisted(() => ({
   api: {
     getAdminPage: vi.fn(),
-    getI18nMessageCategories: vi.fn(),
-    getI18nMessagePage: vi.fn(),
     getMenuTree: vi.fn(),
     getPermissionList: vi.fn(),
     getRoleList: vi.fn(),
@@ -47,15 +44,6 @@ vi.mock('#/api/system', () => ({
     BadgeVariants: [],
     MenuTypes: ['catalog', 'menu', 'embedded', 'link', 'button'],
   },
-}));
-
-vi.mock('#/locales', () => ({
-  $t: (key: string) => key,
-  SUPPORTED_LOCALES: ['en-US', 'zh-CN'],
-}));
-
-vi.mock('#/locales/dynamic', () => ({
-  reloadDynamicMessages: vi.fn(),
 }));
 
 vi.mock('@vben/access', () => ({
@@ -128,14 +116,6 @@ describe('system management grid contracts', () => {
       list: [{ id: '1' }],
       totalCount: 7,
     });
-    runtime.api.getI18nMessageCategories.mockResolvedValue([
-      'default',
-      'admin',
-    ]);
-    runtime.api.getI18nMessagePage.mockResolvedValue({
-      list: [{ category: 'admin', messageKey: 'menu.title', values: [] }],
-      totalCount: 3,
-    });
     runtime.api.getPermissionList.mockResolvedValue([{ id: 'permission-1' }]);
     runtime.api.getRoleList.mockResolvedValue([{ id: 'role-1' }]);
     runtime.api.updateAdmin.mockResolvedValue(undefined);
@@ -166,9 +146,8 @@ describe('system management grid contracts', () => {
     const role = await captureGrid(RolePage);
     const permission = await captureGrid(PermissionPage);
     const menu = await captureGrid(MenuPage);
-    const i18n = await captureGrid(I18nMessagePage);
 
-    for (const config of [admin, role, permission, menu, i18n]) {
+    for (const config of [admin, role, permission, menu]) {
       expect(config.formOptions.submitOnChange).toBe(false);
       expect(config.gridOptions.proxyConfig.showLoading).toBe(false);
     }
@@ -203,15 +182,6 @@ describe('system management grid contracts', () => {
         total: 1,
       },
     );
-    await expect(
-      queryOf(i18n)(
-        { page: { currentPage: 1, pageSize: 10 } },
-        { category: 'admin' },
-      ),
-    ).resolves.toEqual({
-      list: [expect.objectContaining({ rowKey: 'menu.title' })],
-      total: 3,
-    });
   });
 
   it('取消或提交失败不切换管理员状态，之后仍可重新操作', async () => {

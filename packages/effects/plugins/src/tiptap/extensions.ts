@@ -5,8 +5,6 @@ import type { Extensions } from '@tiptap/vue-3';
 
 import type { ImageUploadOptions, VbenTiptapExtensionOptions } from './types';
 
-import { $t } from '@vben/locales';
-
 import { alert } from '@vben-core/popup-ui';
 
 import Highlight from '@tiptap/extension-highlight';
@@ -25,7 +23,7 @@ function validateFile(
   options: ImageUploadOptions,
 ): string | undefined {
   if (options.maxSize !== undefined && file.size > options.maxSize) {
-    return $t('ui.tiptap.upload.fileTooLarge');
+    return '文件大小超出限制';
   }
 
   const accept = options.accept ?? DEFAULT_ACCEPT;
@@ -38,7 +36,7 @@ function validateFile(
       return file.type === type;
     });
     if (!isAccepted) {
-      return $t('ui.tiptap.upload.fileTypeNotAllowed');
+      return '不支持的文件类型';
     }
   }
 
@@ -50,7 +48,7 @@ function handleUploadError(error: unknown, options: ImageUploadOptions): void {
     options.onUploadError(error);
   } else {
     const message = error instanceof Error ? error.message : String(error);
-    alert(message, $t('ui.tiptap.upload.uploadFailed')).catch(() => {});
+    alert(message, '上传失败').catch(() => {});
   }
 }
 
@@ -332,7 +330,7 @@ function createCustomImage(
               if (!file) return false;
               if (imageFiles.length > 1) {
                 handleUploadError(
-                  new Error($t('ui.tiptap.upload.onlySingleImage')),
+                  new Error('仅支持单张图片上传，已选取第一张'),
                   imageUpload,
                 );
               }
@@ -384,7 +382,7 @@ function createCustomImage(
               if (!imageFile) return false;
               if (imageFiles.length > 1) {
                 handleUploadError(
-                  new Error($t('ui.tiptap.upload.onlySingleImage')),
+                  new Error('仅支持单张图片上传，已选取第一张'),
                   imageUpload,
                 );
               }
@@ -454,7 +452,7 @@ export function createDefaultTiptapExtensions(
           },
         }),
     Placeholder.configure({
-      placeholder: options.placeholder ?? $t('ui.tiptap.placeholder'),
+      placeholder: options.placeholder ?? '请输入内容...',
     }),
   ];
 }

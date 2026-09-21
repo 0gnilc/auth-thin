@@ -84,7 +84,7 @@ export namespace MenuApi {
     redirect?: null | string;
     /** 菜单是否启用；禁用不自动删除已有角色授予关系。 */
     status: boolean;
-    /** 菜单显示标题或动态消息键。 */
+    /** 菜单显示标题，直接展示存储的文本。 */
     title: string;
     /** 菜单种类：目录、内部页面、内嵌页面、外链或按钮。 */
     type: (typeof MenuTypes)[number];

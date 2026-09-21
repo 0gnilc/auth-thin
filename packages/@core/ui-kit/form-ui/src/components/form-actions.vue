@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed, toRaw, unref, watch } from 'vue';
 
-import { useSimpleLocale } from '@vben-core/composables';
 import { VbenExpandableArrow } from '@vben-core/shadcn-ui';
 import { cn, isFunction, triggerWindowResize } from '@vben-core/shared/utils';
 
 import { COMPONENT_MAP } from '../config';
 import { injectFormProps } from '../use-form-context';
-
-const { $t } = useSimpleLocale();
 
 const [rootProps, form] = injectFormProps();
 
@@ -16,7 +13,7 @@ const collapsed = defineModel({ default: false });
 
 const resetButtonOptions = computed(() => {
   return {
-    content: `${$t.value('reset')}`,
+    content: `${'重置'}`,
     show: true,
     ...unref(rootProps).resetButtonOptions,
   };
@@ -24,7 +21,7 @@ const resetButtonOptions = computed(() => {
 
 const submitButtonOptions = computed(() => {
   return {
-    content: `${$t.value('submit')}`,
+    content: `${'提交'}`,
     show: true,
     ...unref(rootProps).submitButtonOptions,
   };
@@ -169,7 +166,7 @@ defineExpose({
       v-if="rootProps.showCollapseButton"
       v-model:model-value="collapsed"
     >
-      <span>{{ collapsed ? $t('expand') : $t('collapse') }}</span>
+      <span>{{ collapsed ? '展开' : '收起' }}</span>
     </VbenExpandableArrow>
 
     <!-- 展开按钮后 -->

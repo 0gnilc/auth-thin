@@ -15,7 +15,6 @@ import { useAccessStore } from '@vben/stores';
 
 import { ElMessage } from 'element-plus';
 
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 
 import { refresh } from './core';
@@ -23,13 +22,13 @@ import { refresh } from './core';
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 const requestErrorMessages: Record<RequestErrorType, string> = {
-  'bad-request': 'ui.fallback.http.badRequest',
-  forbidden: 'ui.fallback.http.forbidden',
-  'internal-server-error': 'ui.fallback.http.internalServerError',
-  'network-error': 'ui.fallback.http.networkError',
-  'not-found': 'ui.fallback.http.notFound',
-  'request-timeout': 'ui.fallback.http.requestTimeout',
-  unauthorized: 'ui.fallback.http.unauthorized',
+  'bad-request': '请求错误。请检查您的输入并重试。',
+  forbidden: '禁止访问, 您没有权限访问此资源。',
+  'internal-server-error': '内部服务器错误，请稍后再试。',
+  'network-error': '网络异常，请检查您的网络连接后重试。',
+  'not-found': '未找到, 请求的资源不存在。',
+  'request-timeout': '请求超时，请稍后再试。',
+  unauthorized: '登录认证过期，请重新登录后继续。',
 };
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
@@ -83,7 +82,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       const accessStore = useAccessStore();
 
       config.headers.Authorization = formatToken(accessStore.accessToken);
-      config.headers['Accept-Language'] = preferences.app.locale;
       return config;
     },
   });
@@ -117,7 +115,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
           responseData?.error ?? responseData?.message ?? '';
         ElMessage.error(responseMessage || message);
       },
-      resolveMessage: (type) => $t(requestErrorMessages[type]),
+      resolveMessage: (type) => requestErrorMessages[type],
     }),
   );
 

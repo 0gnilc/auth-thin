@@ -17,7 +17,6 @@ import {
   removeRole,
   saveRolePermissions,
 } from '#/api/system';
-import { $t } from '#/locales';
 
 import ChecklistDrawer from '../components/checklist-drawer.vue';
 import Form from './components/form.vue';
@@ -94,9 +93,9 @@ function onPermissions(row: RoleApi.Role) {
     },
     async save(selected) {
       await saveRolePermissions(row.id, selected);
-      ElMessage.success($t('systemRole.messages.permissionsSuccess'));
+      ElMessage.success('角色权限已保存');
     },
-    title: $t('systemRole.drawer.permissionsTitle', { name: row.name }),
+    title: `为“${row.name}”分配权限`,
   };
   permissionsDrawerApi.setData(data).open();
 }
@@ -108,7 +107,7 @@ function onMenus(row: RoleApi.Role) {
 async function onDelete(row: RoleApi.Role) {
   if (row.builtIn) return;
   await removeRole(row.id);
-  ElMessage.success($t('systemRole.messages.removeSuccess'));
+  ElMessage.success('角色已删除');
   await gridApi.query();
 }
 
@@ -122,7 +121,7 @@ function refresh() {
     <FormDrawer @success="refresh" />
     <PermissionsDrawer />
     <MenusDrawer />
-    <Grid :table-title="$t('systemRole.title')">
+    <Grid table-title="角色管理">
       <template #toolbar-tools>
         <VbenButton
           v-access:code="'system:role:create'"
@@ -130,13 +129,13 @@ function refresh() {
           @click="onCreate"
         >
           <IconifyIcon icon="lucide:plus" class="mr-2 size-4" />
-          {{ $t('systemRole.actions.create') }}
+          新增角色
         </VbenButton>
       </template>
 
       <template #type="{ row }">
         <ElTag :type="row.builtIn ? 'warning' : 'info'" effect="plain">
-          {{ row.builtIn ? $t('rbacCommon.builtIn') : $t('rbacCommon.custom') }}
+          {{ row.builtIn ? '内置' : '自定义' }}
         </ElTag>
       </template>
 
@@ -146,22 +145,20 @@ function refresh() {
             {
               auth: 'system:role:update',
               disabled: row.builtIn,
-              text: $t('rbacCommon.edit'),
-              tooltip: row.builtIn
-                ? $t('rbacCommon.builtInProtected')
-                : undefined,
+              text: '修改',
+              tooltip: row.builtIn ? '内置资源不可修改' : undefined,
               onClick: () => onEdit(row),
             },
             {
               auth: 'system:role:manage-permissions',
               disabled: row.builtIn,
-              text: $t('systemRole.actions.permissions'),
+              text: '分配权限',
               onClick: () => onPermissions(row),
             },
             {
               auth: 'system:role:manage-menus',
               disabled: row.builtIn,
-              text: $t('systemRole.actions.menus'),
+              text: '菜单授权',
               onClick: () => onMenus(row),
             },
           ]"
@@ -170,11 +167,9 @@ function refresh() {
               auth: 'system:role:remove',
               danger: true,
               disabled: row.builtIn,
-              text: $t('rbacCommon.remove'),
+              text: '删除',
               popConfirm: {
-                title: $t('systemRole.messages.removeConfirm', {
-                  name: row.name,
-                }),
+                title: `确定删除角色“${row.name}”吗？`,
                 confirm: () => onDelete(row),
               },
             },

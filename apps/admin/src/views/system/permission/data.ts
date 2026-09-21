@@ -2,36 +2,34 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { PermissionApi } from '#/api/system';
 
-import { $t } from '#/locales';
-
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
       fieldName: 'code',
-      label: $t('systemPermission.form.code'),
+      label: '权限标识',
     },
     {
       component: 'Input',
       fieldName: 'name',
-      label: $t('systemPermission.form.name'),
+      label: '权限名称',
     },
     {
       component: 'Input',
       fieldName: 'targetIdentifier',
-      label: $t('systemPermission.form.targetIdentifier'),
+      label: '访问目标标识',
     },
     {
       component: 'Select',
       componentProps: {
         clearable: true,
         options: [
-          { label: $t('systemPermission.public'), value: true },
-          { label: $t('systemPermission.protected'), value: false },
+          { label: '公开访问', value: true },
+          { label: '需要授权', value: false },
         ],
       },
       fieldName: 'publicAccess',
-      label: $t('systemPermission.filters.publicAccess'),
+      label: '访问方式',
     },
   ];
 }
@@ -41,35 +39,35 @@ export function useColumns(): VxeTableGridColumns<PermissionApi.Permission> {
     {
       field: 'code',
       minWidth: 210,
-      title: $t('systemPermission.table.code'),
+      title: '权限标识',
     },
     {
       field: 'name',
       minWidth: 170,
-      title: $t('systemPermission.table.name'),
+      title: '权限名称',
     },
     {
       field: 'targetQualifier',
-      title: $t('systemPermission.table.qualifier'),
+      title: '限定符',
       width: 100,
     },
     {
       field: 'targetIdentifier',
       minWidth: 240,
-      title: $t('systemPermission.table.target'),
+      title: '访问目标',
     },
     {
       align: 'center',
       field: 'publicAccess',
       slots: { default: 'access' },
-      title: $t('systemPermission.table.access'),
+      title: '访问方式',
       width: 120,
     },
     {
       align: 'center',
       field: 'builtIn',
       slots: { default: 'type' },
-      title: $t('systemPermission.table.type'),
+      title: '类型',
       width: 110,
     },
     {
@@ -77,7 +75,7 @@ export function useColumns(): VxeTableGridColumns<PermissionApi.Permission> {
       field: 'operation',
       fixed: 'right',
       slots: { default: 'action' },
-      title: $t('rbacCommon.actions'),
+      title: '操作',
       width: 120,
     },
   ];

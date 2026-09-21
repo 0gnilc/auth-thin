@@ -57,7 +57,7 @@ vi.mock('#/adapter/form', async () => {
 });
 
 vi.mock('#/api/system', () => runtime.api);
-vi.mock('#/locales', () => ({ $t: (key: string) => key }));
+
 vi.mock('element-plus', () => ({
   ElMessage: runtime.messages,
   ElMessageBox: { confirm: runtime.confirmClose },

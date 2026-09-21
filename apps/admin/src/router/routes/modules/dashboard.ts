@@ -1,14 +1,12 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-import { $t } from '#/locales';
-
 const workspaceRedirectRoute: RouteRecordRaw = {
   meta: {
     authority: ['admin'],
     hideInBreadcrumb: true,
     hideInMenu: true,
     hideInTab: true,
-    title: $t('dashboard.title'),
+    title: '首页',
   },
   name: 'WorkspaceRedirect',
   path: '/workspace',
@@ -23,7 +21,7 @@ const routes: RouteRecordRaw[] = [
       authority: ['admin'],
       icon: 'lucide:layout-dashboard',
       order: -1,
-      title: $t('dashboard.title'),
+      title: '首页',
     },
     name: 'Dashboard',
     path: '/dashboard',

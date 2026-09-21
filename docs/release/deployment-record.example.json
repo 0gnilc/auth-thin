@@ -7,7 +7,7 @@
   "serverArtifactSha256": "<server-jar-sha256>",
   "adminImageDigest": null,
   "serverImageDigest": null,
-  "databaseBaseline": "baseline-1",
+  "databaseBaseline": "baseline-2",
   "appliedMigrations": [],
   "deployedAt": "<UTC-ISO-8601>",
   "operator": "<deployment-operator>",

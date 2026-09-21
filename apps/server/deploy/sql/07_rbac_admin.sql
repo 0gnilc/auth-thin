@@ -1,6 +1,6 @@
 -- RBAC 与后台管理员管理功能初始化脚本。
--- 依赖依次执行 01_rbac.sql 至 06_i18n.sql。
--- 除空库初始化外，本脚本还可为上一版本当前表结构幂等补齐 built_in 字段。
+-- 依赖依次执行 01_rbac.sql 至 05_admin_permissions.sql。
+-- 面向 standard 新库初始化及重复执行，不作为其他版本数据库的升级脚本。
 
 SET NAMES utf8mb4;
 
@@ -196,8 +196,7 @@ SET built_in = 1,
     update_time = UTC_TIMESTAMP(6)
 WHERE code = '*:/error'
    OR target_identifier LIKE '/authz/%'
-   OR target_identifier LIKE '/sys/admin/%'
-   OR target_identifier LIKE '/sys/i18n-message/%';
+   OR target_identifier LIKE '/sys/admin/%';
 
 -- RBAC 管理接口和后台管理员管理接口统一要求 rbac:manager 权限。
 UPDATE az_permission
@@ -228,9 +227,7 @@ WHERE p.del = 0
           'POST:/sys/admin/create',
           'POST:/sys/admin/update',
           'POST:/sys/admin/roles/save',
-          'POST:/sys/admin/remove/{id}',
-          'POST:/sys/i18n-message/values/{messageKey}',
-          'POST:/sys/i18n-message/save'
+          'POST:/sys/admin/remove/{id}'
       )
   )
   AND @rbac_manager_role_id IS NOT NULL
@@ -241,6 +238,37 @@ WHERE p.del = 0
         AND rp.permission_id = p.id
         AND rp.del = 0
   );
+
+INSERT INTO az_menu (
+    del, create_time, update_time, pid, type, status, name, path, component,
+    affix_tab, hide_in_menu, keep_alive, icon, `order`, title
+)
+SELECT
+    0, UTC_TIMESTAMP(6), NULL, 0, 'catalog', 1, 'System', '/system', 'BasicLayout',
+    0, 0, 0, 'lucide:settings', 50, '系统管理'
+WHERE NOT EXISTS (
+    SELECT 1 FROM az_menu WHERE name = 'System'
+);
+
+UPDATE az_menu
+SET del = 0,
+    pid = 0,
+    type = 'catalog',
+    status = 1,
+    path = '/system',
+    component = 'BasicLayout',
+    hide_in_menu = 0,
+    keep_alive = 0,
+    icon = 'lucide:settings',
+    `order` = 50,
+    title = '系统管理',
+    update_time = UTC_TIMESTAMP(6)
+WHERE name = 'System';
+
+SET @system_menu_id := (
+    SELECT id FROM az_menu WHERE name = 'System' AND del = 0 LIMIT 1
+);
+
 
 DROP TEMPORARY TABLE IF EXISTS rbac_admin_menu_seed;
 CREATE TEMPORARY TABLE rbac_admin_menu_seed (
@@ -260,10 +288,10 @@ CREATE TEMPORARY TABLE rbac_admin_menu_seed (
 INSERT INTO rbac_admin_menu_seed
     (name, parent_name, type, access_code, path, component, icon, menu_order, title)
 VALUES
-    ('Admin', 'System', 'menu', NULL, '/system/admin', '/system/admin/index', 'lucide:user-cog', 20, 'menu.system.admin.title'),
-    ('Role', 'System', 'menu', NULL, '/system/role', '/system/role/index', 'lucide:users-round', 30, 'menu.system.role.title'),
-    ('Permission', 'System', 'menu', NULL, '/system/permission', '/system/permission/index', 'lucide:key-round', 40, 'menu.system.permission.title'),
-    ('Menu', 'System', 'menu', NULL, '/system/menu', '/system/menu/index', 'lucide:list-tree', 50, 'menu.system.menu.title');
+    ('Admin', 'System', 'menu', NULL, '/system/admin', '/system/admin/index', 'lucide:user-cog', 20, '后台管理员'),
+    ('Role', 'System', 'menu', NULL, '/system/role', '/system/role/index', 'lucide:users-round', 30, '角色管理'),
+    ('Permission', 'System', 'menu', NULL, '/system/permission', '/system/permission/index', 'lucide:key-round', 40, '权限管理'),
+    ('Menu', 'System', 'menu', NULL, '/system/menu', '/system/menu/index', 'lucide:list-tree', 50, '菜单管理');
 
 UPDATE rbac_admin_menu_seed
 SET keep_alive = 1;
@@ -284,21 +312,21 @@ WHERE NOT EXISTS (
 INSERT INTO rbac_admin_menu_seed
     (name, parent_name, type, access_code, path, component, icon, menu_order, title)
 VALUES
-    ('AdminCreate', 'Admin', 'button', 'system:admin:create', NULL, NULL, NULL, 1, 'menu.system.admin.create'),
-    ('AdminUpdate', 'Admin', 'button', 'system:admin:update', NULL, NULL, NULL, 2, 'menu.system.admin.update'),
-    ('AdminRemove', 'Admin', 'button', 'system:admin:remove', NULL, NULL, NULL, 3, 'menu.system.admin.remove'),
-    ('AdminRole', 'Admin', 'button', 'system:admin:manage-roles', NULL, NULL, NULL, 4, 'menu.system.admin.role'),
-    ('RoleCreate', 'Role', 'button', 'system:role:create', NULL, NULL, NULL, 1, 'menu.system.role.create'),
-    ('RoleUpdate', 'Role', 'button', 'system:role:update', NULL, NULL, NULL, 2, 'menu.system.role.update'),
-    ('RoleRemove', 'Role', 'button', 'system:role:remove', NULL, NULL, NULL, 3, 'menu.system.role.remove'),
-    ('RolePermission', 'Role', 'button', 'system:role:manage-permissions', NULL, NULL, NULL, 4, 'menu.system.role.permission'),
-    ('RoleMenu', 'Role', 'button', 'system:role:manage-menus', NULL, NULL, NULL, 5, 'menu.system.role.menu'),
-    ('PermissionCreate', 'Permission', 'button', 'system:permission:create', NULL, NULL, NULL, 1, 'menu.system.permission.create'),
-    ('PermissionUpdate', 'Permission', 'button', 'system:permission:update', NULL, NULL, NULL, 2, 'menu.system.permission.update'),
-    ('PermissionRemove', 'Permission', 'button', 'system:permission:remove', NULL, NULL, NULL, 3, 'menu.system.permission.remove'),
-    ('MenuCreate', 'Menu', 'button', 'system:menu:create', NULL, NULL, NULL, 1, 'menu.system.menu.create'),
-    ('MenuUpdate', 'Menu', 'button', 'system:menu:update', NULL, NULL, NULL, 2, 'menu.system.menu.update'),
-    ('MenuRemove', 'Menu', 'button', 'system:menu:remove', NULL, NULL, NULL, 3, 'menu.system.menu.remove');
+    ('AdminCreate', 'Admin', 'button', 'system:admin:create', NULL, NULL, NULL, 1, '新增后台管理员'),
+    ('AdminUpdate', 'Admin', 'button', 'system:admin:update', NULL, NULL, NULL, 2, '修改后台管理员'),
+    ('AdminRemove', 'Admin', 'button', 'system:admin:remove', NULL, NULL, NULL, 3, '删除后台管理员'),
+    ('AdminRole', 'Admin', 'button', 'system:admin:manage-roles', NULL, NULL, NULL, 4, '分配角色'),
+    ('RoleCreate', 'Role', 'button', 'system:role:create', NULL, NULL, NULL, 1, '新增角色'),
+    ('RoleUpdate', 'Role', 'button', 'system:role:update', NULL, NULL, NULL, 2, '修改角色'),
+    ('RoleRemove', 'Role', 'button', 'system:role:remove', NULL, NULL, NULL, 3, '删除角色'),
+    ('RolePermission', 'Role', 'button', 'system:role:manage-permissions', NULL, NULL, NULL, 4, '分配权限'),
+    ('RoleMenu', 'Role', 'button', 'system:role:manage-menus', NULL, NULL, NULL, 5, '菜单授权'),
+    ('PermissionCreate', 'Permission', 'button', 'system:permission:create', NULL, NULL, NULL, 1, '新增权限'),
+    ('PermissionUpdate', 'Permission', 'button', 'system:permission:update', NULL, NULL, NULL, 2, '修改权限'),
+    ('PermissionRemove', 'Permission', 'button', 'system:permission:remove', NULL, NULL, NULL, 3, '删除权限'),
+    ('MenuCreate', 'Menu', 'button', 'system:menu:create', NULL, NULL, NULL, 1, '新增菜单'),
+    ('MenuUpdate', 'Menu', 'button', 'system:menu:update', NULL, NULL, NULL, 2, '修改菜单'),
+    ('MenuRemove', 'Menu', 'button', 'system:menu:remove', NULL, NULL, NULL, 3, '删除菜单');
 
 INSERT INTO az_menu (
     del, create_time, update_time, pid, type, status, access_code, name, path,
@@ -337,10 +365,7 @@ SET built_in = 1,
 WHERE name IN (
     'Dashboard',
     'Profile',
-    'System',
-    'I18nMessage',
-    'I18nMessageSave',
-    'I18nMessageRemove'
+    'System'
 )
   AND del = 0;
 
@@ -358,75 +383,7 @@ WHERE menu.del = 0
         AND rm.del = 0
   );
 
-DROP TEMPORARY TABLE IF EXISTS rbac_admin_i18n_seed;
-CREATE TEMPORARY TABLE rbac_admin_i18n_seed (
-    message_key varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-    locale varchar(20) NOT NULL,
-    i18n_value text NOT NULL,
-    PRIMARY KEY (message_key, locale)
-) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-INSERT INTO rbac_admin_i18n_seed (message_key, locale, i18n_value)
-VALUES
-    ('menu.system.admin.title', 'zh-CN', '后台管理员'),
-    ('menu.system.admin.title', 'en-US', 'Administrators'),
-    ('menu.system.admin.create', 'zh-CN', '新增后台管理员'),
-    ('menu.system.admin.create', 'en-US', 'Create administrator'),
-    ('menu.system.admin.update', 'zh-CN', '修改后台管理员'),
-    ('menu.system.admin.update', 'en-US', 'Update administrator'),
-    ('menu.system.admin.remove', 'zh-CN', '删除后台管理员'),
-    ('menu.system.admin.remove', 'en-US', 'Delete administrator'),
-    ('menu.system.admin.role', 'zh-CN', '分配角色'),
-    ('menu.system.admin.role', 'en-US', 'Assign roles'),
-    ('menu.system.role.title', 'zh-CN', '角色管理'),
-    ('menu.system.role.title', 'en-US', 'Roles'),
-    ('menu.system.role.create', 'zh-CN', '新增角色'),
-    ('menu.system.role.create', 'en-US', 'Create role'),
-    ('menu.system.role.update', 'zh-CN', '修改角色'),
-    ('menu.system.role.update', 'en-US', 'Update role'),
-    ('menu.system.role.remove', 'zh-CN', '删除角色'),
-    ('menu.system.role.remove', 'en-US', 'Delete role'),
-    ('menu.system.role.permission', 'zh-CN', '分配权限'),
-    ('menu.system.role.permission', 'en-US', 'Assign permissions'),
-    ('menu.system.role.menu', 'zh-CN', '菜单授权'),
-    ('menu.system.role.menu', 'en-US', 'Assign menus'),
-    ('menu.system.permission.title', 'zh-CN', '权限管理'),
-    ('menu.system.permission.title', 'en-US', 'Permissions'),
-    ('menu.system.permission.create', 'zh-CN', '新增权限'),
-    ('menu.system.permission.create', 'en-US', 'Create permission'),
-    ('menu.system.permission.update', 'zh-CN', '修改权限'),
-    ('menu.system.permission.update', 'en-US', 'Update permission'),
-    ('menu.system.permission.remove', 'zh-CN', '删除权限'),
-    ('menu.system.permission.remove', 'en-US', 'Delete permission'),
-    ('menu.system.menu.title', 'zh-CN', '菜单管理'),
-    ('menu.system.menu.title', 'en-US', 'Menus'),
-    ('menu.system.menu.create', 'zh-CN', '新增菜单'),
-    ('menu.system.menu.create', 'en-US', 'Create menu'),
-    ('menu.system.menu.update', 'zh-CN', '修改菜单'),
-    ('menu.system.menu.update', 'en-US', 'Update menu'),
-    ('menu.system.menu.remove', 'zh-CN', '删除菜单'),
-    ('menu.system.menu.remove', 'en-US', 'Delete menu');
-
-INSERT INTO sys_i18n (category, message_key, locale, i18n_value, create_time)
-SELECT COALESCE((
-           SELECT current_category.category
-           FROM sys_i18n current_category
-           WHERE current_category.message_key = seed.message_key
-           LIMIT 1
-       ), 'admin'),
-       seed.message_key,
-       seed.locale,
-       seed.i18n_value,
-       UTC_TIMESTAMP(6)
-FROM rbac_admin_i18n_seed seed
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM sys_i18n current_message
-    WHERE current_message.message_key = seed.message_key
-      AND current_message.locale COLLATE utf8mb4_unicode_ci = seed.locale
-);
-
-DROP TEMPORARY TABLE IF EXISTS rbac_admin_i18n_seed;
 DROP TEMPORARY TABLE IF EXISTS rbac_admin_menu_seed;
 
 -- 新库首次创建默认管理员时授予本项目的管理能力；后续初始化不恢复操作者解除的绑定。
@@ -434,7 +391,7 @@ DROP TEMPORARY TABLE IF EXISTS rbac_admin_menu_seed;
 INSERT INTO az_user_role (del, create_time, update_time, user_id, role_id)
 SELECT 0, UTC_TIMESTAMP(6), NULL, admin.user_id, role.id
 FROM sys_admin admin
-JOIN az_role role ON role.code IN ('rbac:manager', 'i18n:manager') AND role.del = 0
+JOIN az_role role ON role.code = 'rbac:manager' AND role.del = 0
 WHERE admin.username = 'admin'
   AND admin.del = 0
   AND @default_admin_created = 1

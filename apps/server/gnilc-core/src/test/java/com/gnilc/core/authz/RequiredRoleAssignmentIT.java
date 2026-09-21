@@ -46,14 +46,14 @@ class RequiredRoleAssignmentIT {
 
         assertThatThrownBy(() -> userRoles.unbindRole(adminUserId, adminRoleId))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The required baseline role cannot be removed.");
+                .hasMessage("不能移除必需的基础角色。");
 
         UserRoleDto assignment = new UserRoleDto();
         assignment.setUserId(adminUserId);
         assignment.setRoleIds(List.of());
         assertThatThrownBy(() -> userRoles.updateUserRole(assignment))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The required baseline role cannot be removed.");
+                .hasMessage("不能移除必需的基础角色。");
     }
 
     private Long roleId(String code) {

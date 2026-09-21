@@ -3,7 +3,6 @@ package com.gnilc.auth.authz.rbac.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gnilc.common.base.Preconditions;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.common.utils.PageResult;
 import com.gnilc.auth.authz.rbac.dao.RoleDao;
 import com.gnilc.auth.authz.rbac.entity.bo.RoleBo;
@@ -26,7 +25,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
-
 /** 管理自定义角色生命周期，保护内置角色并在删除时清理所属绑定。 */
 @Service("roleService")
 public class RoleServiceImpl extends ServiceImpl<RoleDao, RoleBo> implements RoleService {
@@ -35,18 +33,15 @@ public class RoleServiceImpl extends ServiceImpl<RoleDao, RoleBo> implements Rol
     private final UserRoleService userRoleService;
     private final RolePermissionService rolePermissionService;
     private final RoleMenuService roleMenuService;
-    private final I18nMessageService messages;
 
     public RoleServiceImpl(ApplicationEventPublisher eventPublisher,
                            UserRoleService userRoleService,
                            @Lazy RolePermissionService rolePermissionService,
-                           @Lazy RoleMenuService roleMenuService,
-                           I18nMessageService messages) {
+                           @Lazy RoleMenuService roleMenuService) {
         this.eventPublisher = eventPublisher;
         this.userRoleService = userRoleService;
         this.rolePermissionService = rolePermissionService;
         this.roleMenuService = roleMenuService;
-        this.messages = messages;
     }
 
     @Override
@@ -138,10 +133,10 @@ public class RoleServiceImpl extends ServiceImpl<RoleDao, RoleBo> implements Rol
     @Transactional
     @Override
     public void removeRole(Long id) {
-        Preconditions.checkArgument(id != null, messages.get("rbac.role.selection.required"));
+        Preconditions.checkArgument(id != null, "请选择角色。");
         RoleBo bo = getById(id);
-        Preconditions.checkCondition(bo != null, messages.get("rbac.role.notFound"));
-        Preconditions.checkCondition(!Boolean.TRUE.equals(bo.getBuiltIn()), messages.get("rbac.role.builtIn.delete"));
+        Preconditions.checkCondition(bo != null, "角色已不存在，请刷新后重试。");
+        Preconditions.checkCondition(!Boolean.TRUE.equals(bo.getBuiltIn()), "内置角色不能删除。");
         bo.setCode(bo.getCode() + "_del_" + id);
         updateById(bo);
         rolePermissionService.removeByRoleId(id);
@@ -166,28 +161,28 @@ public class RoleServiceImpl extends ServiceImpl<RoleDao, RoleBo> implements Rol
     }
 
     private RoleBo validateRole(RoleDto dto, boolean update) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.role.information.required"));
+        Preconditions.checkArgument(dto != null, "角色信息不能为空。");
         RoleBo role = null;
         if (update) {
-            Preconditions.checkArgument(dto.getId() != null, messages.get("rbac.role.selection.required"));
+            Preconditions.checkArgument(dto.getId() != null, "请选择角色。");
             role = getById(dto.getId());
-            Preconditions.checkCondition(role != null, messages.get("rbac.role.notFound"));
+            Preconditions.checkCondition(role != null, "角色已不存在，请刷新后重试。");
             Preconditions.checkCondition(!Boolean.TRUE.equals(role.getBuiltIn()),
-                    messages.get("rbac.role.builtIn.modify"));
+                    "内置角色不能修改。");
         }
         String code = dto.getCode();
         String name = dto.getName();
         String remark = dto.getRemark();
-        Preconditions.checkArgument(StringUtils.isNotBlank(code), messages.get("rbac.role.code.required"));
-        Preconditions.checkArgument(StringUtils.isNotBlank(name), messages.get("rbac.role.name.required"));
+        Preconditions.checkArgument(StringUtils.isNotBlank(code), "角色编码不能为空。");
+        Preconditions.checkArgument(StringUtils.isNotBlank(name), "角色名称不能为空。");
         Preconditions.checkArgument(code.codePointCount(0, code.length()) <= 255,
-                messages.get("rbac.role.code.tooLong", 255));
+                "角色编码不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(name.codePointCount(0, name.length()) <= 255,
-                messages.get("rbac.role.name.tooLong", 255));
+                "角色名称不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(remark == null || remark.codePointCount(0, remark.length()) <= 500,
-                messages.get("rbac.role.remark.tooLong", 500));
+                "角色描述不能超过 %s 个字符。".formatted(500));
         if (!update || !code.equals(role.getCode())) {
-            Preconditions.checkArgument(getRoleByCode(code) == null, messages.get("rbac.role.code.exists"));
+            Preconditions.checkArgument(getRoleByCode(code) == null, "已存在使用该编码的角色。");
         }
         return role;
     }

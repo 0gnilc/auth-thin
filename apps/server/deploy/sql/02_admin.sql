@@ -123,7 +123,7 @@ INSERT INTO az_menu (
 )
 SELECT
     0, UTC_TIMESTAMP(6), NULL, 0, 'menu', 1, 'Dashboard', '/dashboard', '/dashboard/index',
-    1, 0, 'lucide:layout-dashboard', -1, 'dashboard.title'
+    1, 0, 'lucide:layout-dashboard', -1, '首页'
 WHERE NOT EXISTS (
     SELECT 1 FROM az_menu WHERE name = 'Dashboard'
 );
@@ -134,7 +134,7 @@ INSERT INTO az_menu (
 )
 SELECT
     0, UTC_TIMESTAMP(6), NULL, 0, 'menu', 1, 'Profile', '/profile', '/_core/profile/index',
-    0, 1, 'lucide:user', 999, 'auth.profile'
+    0, 1, 'lucide:user', 999, '个人中心'
 WHERE NOT EXISTS (
     SELECT 1 FROM az_menu WHERE name = 'Profile'
 );

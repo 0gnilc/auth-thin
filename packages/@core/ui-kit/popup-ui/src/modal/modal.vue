@@ -12,7 +12,7 @@ import {
   watch,
 } from 'vue';
 
-import { usePriorityValues, useSimpleLocale } from '@vben-core/composables';
+import { usePriorityValues } from '@vben-core/composables';
 import { Expand, Shrink } from '@vben-core/icons';
 import {
   Dialog,
@@ -53,7 +53,6 @@ const headerRef = ref();
 // @ts-expect-error unused
 const footerRef = ref();
 
-const { $t } = useSimpleLocale();
 const state = props.modalApi?.useStore?.();
 
 const id = useId();
@@ -353,7 +352,7 @@ function handleClosed() {
             @click="() => modalApi?.onCancel()"
           >
             <slot name="cancelText">
-              {{ cancelText || $t('cancel') }}
+              {{ cancelText || '取消' }}
             </slot>
           </component>
           <slot name="center-footer"></slot>
@@ -365,7 +364,7 @@ function handleClosed() {
             @click="() => modalApi?.onConfirm()"
           >
             <slot name="confirmText">
-              {{ confirmText || $t('confirm') }}
+              {{ confirmText || '确认' }}
             </slot>
           </component>
         </slot>

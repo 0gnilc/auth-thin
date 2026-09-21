@@ -5,7 +5,6 @@ import type { AlertProps } from './alert';
 
 import { computed, h, nextTick, ref } from 'vue';
 
-import { useSimpleLocale } from '@vben-core/composables';
 import {
   CircleAlert,
   CircleCheckBig,
@@ -40,7 +39,6 @@ const props = withDefaults(defineProps<AlertProps>(), {
 const emits = defineEmits(['closed', 'confirm', 'opened']);
 const { globalEscapeShortcutKey } = usePreferences();
 const open = defineModel<boolean>('open', { default: false });
-const { $t } = useSimpleLocale();
 const components = globalShareState.getComponents();
 const isConfirm = ref(false);
 
@@ -169,7 +167,7 @@ async function handleOpenChange(val: boolean) {
         <AlertDialogTitle v-if="title">
           <div class="flex items-center">
             <component :is="getIconRender" class="mr-2" />
-            <span class="flex-auto">{{ $t(title) }}</span>
+            <span class="flex-auto">{{ title }}</span>
             <AlertDialogCancel v-if="showCancel" as-child>
               <VbenButton
                 variant="ghost"
@@ -201,7 +199,7 @@ async function handleOpenChange(val: boolean) {
               variant="outline"
               @click="handleCancel"
             >
-              {{ cancelText || $t('cancel') }}
+              {{ cancelText || '取消' }}
             </component>
           </AlertDialogCancel>
           <AlertDialogAction as-child>
@@ -210,7 +208,7 @@ async function handleOpenChange(val: boolean) {
               :loading="loading"
               @click="handleConfirm"
             >
-              {{ confirmText || $t('confirm') }}
+              {{ confirmText || '确认' }}
             </component>
           </AlertDialogAction>
         </div>

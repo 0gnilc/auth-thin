@@ -2,17 +2,15 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { MenuApi } from '#/api/system';
 
-import { $t } from '#/locales';
-
 /** 导航菜单种类，沿用服务端菜单契约。 */
 export type MenuType = MenuApi.Menu['type'];
 
-export const menuTypeMessageKeys = {
-  button: 'systemMenu.types.button',
-  catalog: 'systemMenu.types.catalog',
-  embedded: 'systemMenu.types.embedded',
-  link: 'systemMenu.types.link',
-  menu: 'systemMenu.types.menu',
+export const menuTypeLabels = {
+  button: '按钮',
+  catalog: '目录',
+  embedded: '内嵌页面',
+  link: '外链',
+  menu: '菜单',
 } as const satisfies Record<MenuType, string>;
 
 export const menuTypeTagTypes = {
@@ -84,7 +82,7 @@ export interface MenuForm {
   redirect: null | string;
   /** 菜单是否启用；禁用不自动删除已有角色授予关系。 */
   status: boolean;
-  /** 菜单显示标题或动态消息键。 */
+  /** 菜单显示标题，直接展示存储的文本。 */
   title: string;
   /** 菜单种类：目录、内部页面、内嵌页面、外链或按钮。 */
   type: MenuType;
@@ -129,7 +127,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       fieldName: 'keyword',
-      label: $t('systemMenu.filters.keyword'),
+      label: '关键词',
     },
   ];
 }
@@ -140,37 +138,37 @@ export function useColumns(): VxeTableGridColumns<MenuApi.Menu> {
       field: 'title',
       minWidth: 260,
       slots: { default: 'title' },
-      title: $t('systemMenu.table.title'),
+      title: '菜单标题',
       treeNode: true,
     },
     {
       field: 'name',
       minWidth: 150,
-      title: $t('systemMenu.table.name'),
+      title: '菜单名称',
     },
     {
       align: 'center',
       field: 'type',
       slots: { default: 'type' },
-      title: $t('systemMenu.table.type'),
+      title: '类型',
       width: 110,
     },
     {
       field: 'accessCode',
       minWidth: 230,
       slots: { default: 'accessCode' },
-      title: $t('systemMenu.table.accessCode'),
+      title: '按钮权限码',
     },
     {
       field: 'path',
       minWidth: 180,
-      title: $t('systemMenu.table.path'),
+      title: '路径',
     },
     {
       align: 'center',
       field: 'status',
       slots: { default: 'status' },
-      title: $t('systemMenu.table.status'),
+      title: '状态',
       width: 100,
     },
     {
@@ -178,7 +176,7 @@ export function useColumns(): VxeTableGridColumns<MenuApi.Menu> {
       field: 'operation',
       fixed: 'right',
       slots: { default: 'action' },
-      title: $t('rbacCommon.actions'),
+      title: '操作',
       width: 190,
     },
   ];

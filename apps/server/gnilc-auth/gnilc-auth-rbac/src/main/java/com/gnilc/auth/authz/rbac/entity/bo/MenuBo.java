@@ -8,7 +8,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 
-
 /** 菜单和导航配置的持久化记录，菜单可见性与目标访问权限分别管理。 */
 @Data
 @TableName("az_menu")
@@ -129,6 +128,6 @@ public class MenuBo implements Serializable {
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String query;
 
-    /** 菜单显示标题，可使用对应的本地化消息键。 */
+    /** 菜单显示标题，直接展示存储的文本。 */
     private String title;
 }

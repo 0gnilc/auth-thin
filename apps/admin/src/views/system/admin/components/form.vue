@@ -12,7 +12,6 @@ import { ElMessage } from 'element-plus';
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
 import { useVbenForm, z } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system';
-import { $t } from '#/locales';
 
 const emit = defineEmits<{ success: [] }>();
 
@@ -37,7 +36,7 @@ const saved = ref(false);
 
 const passwordRule = z
   .string()
-  .max(32, { message: $t('profile.form.passwordMaxLength') })
+  .max(32, { message: '密码最多 32 个字符' })
   .refine(
     (value) =>
       !value ||
@@ -47,7 +46,7 @@ const passwordRule = z
         /[A-Z]/.test(value) &&
         /\d/.test(value) &&
         /[^A-Za-z0-9]/.test(value)),
-    { message: $t('profile.form.passwordComplexity') },
+    { message: '密码需包含大小写字母、数字和特殊字符，且不能含空白' },
   );
 
 const schema: VbenFormSchema<AdminForm>[] = [
@@ -64,43 +63,43 @@ const schema: VbenFormSchema<AdminForm>[] = [
   {
     component: 'Input',
     fieldName: 'username',
-    label: $t('systemAdmin.form.username'),
+    label: '用户名',
     rules: 'required',
   },
   {
     component: 'VbenInputPassword',
     componentProps: {
       passwordStrength: true,
-      placeholder: $t('systemAdmin.form.passwordUnchanged'),
+      placeholder: '留空则不修改密码',
     },
     fieldName: 'password',
-    label: $t('systemAdmin.form.password'),
+    label: '密码',
     rules: passwordRule,
   },
   {
     component: 'Input',
     fieldName: 'nickname',
-    label: $t('systemAdmin.form.nickname'),
+    label: '昵称',
     rules: 'required',
   },
   {
     component: 'Input',
     defaultValue: '/dashboard',
     fieldName: 'homePath',
-    label: $t('systemAdmin.form.homePath'),
+    label: '默认首页',
     rules: 'required',
   },
   {
     component: 'Input',
     fieldName: 'avatar',
-    label: $t('systemAdmin.form.avatar'),
+    label: '头像 URL',
   },
   {
     component: 'Input',
     componentProps: { rows: 3, type: 'textarea' },
     fieldName: 'desc',
     formItemClass: 'col-span-full',
-    label: $t('systemAdmin.form.description'),
+    label: '描述',
   },
   {
     component: 'Switch',
@@ -112,7 +111,7 @@ const schema: VbenFormSchema<AdminForm>[] = [
       triggerFields: ['currentAdmin'],
     },
     fieldName: 'status',
-    label: $t('systemAdmin.form.status'),
+    label: '启用状态',
   },
 ];
 
@@ -138,7 +137,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (!valid) return;
     const values = await formApi.getValues<AdminForm>();
     if (!values.id && !values.password) {
-      ElMessage.error($t('systemAdmin.validation.password'));
+      ElMessage.error('新增后台管理员时必须设置密码');
       return;
     }
 
@@ -166,7 +165,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
             username: values.username ?? '',
           }));
       saved.value = true;
-      ElMessage.success($t('systemAdmin.messages.saveSuccess'));
+      ElMessage.success('后台管理员已保存');
       emit('success');
       await drawerApi.close();
     } finally {
@@ -189,9 +188,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       username: row.username ?? '',
     };
     drawerApi.setState({
-      title: row.id
-        ? $t('systemAdmin.drawer.editTitle')
-        : $t('systemAdmin.drawer.createTitle'),
+      title: row.id ? '修改后台管理员' : '新增后台管理员',
     });
     await formApi.reset();
     await nextTick();

@@ -1,4 +1,3 @@
-import type { SupportedLocale } from '@vben-core/shared/constants';
 import type {
   AccessModeType,
   AuthPageLayoutType,
@@ -17,7 +16,6 @@ import type {
   ThemeModeType,
 } from '@vben-core/typings';
 
-type SupportedLanguagesType = SupportedLocale;
 type CustomPreferencesValue = boolean | number | string;
 
 interface CustomPreferencesOption<TValue extends string = string> {
@@ -148,8 +146,7 @@ interface AppPreferences {
   isMobile: boolean;
   /** 布局方式 */
   layout: LayoutType;
-  /** 支持的语言 */
-  locale: SupportedLanguagesType;
+
   /** 登录过期模式 */
   loginExpiredMode: LoginExpiredModeType;
   /** 应用名 */
@@ -372,10 +369,7 @@ interface WidgetPreferences {
   globalSearch: boolean;
   /** 全局搜索按钮位置 */
   globalSearchButtonPosition: 'header' | 'none' | 'user-dropdown';
-  /** 是否启用语言切换部件 */
-  languageToggle: boolean;
-  /** 语言切换按钮位置 */
-  languageToggleButtonPosition: 'header' | 'none' | 'user-dropdown';
+
   /** 是否开启锁屏功能 */
   lockScreen: boolean;
   /** 锁屏按钮位置 */
@@ -465,7 +459,6 @@ export type {
   PreferencesKeys,
   ShortcutKeyPreferences,
   SidebarPreferences,
-  SupportedLanguagesType,
   TabbarPreferences,
   ThemePreferences,
   TransitionPreferences,

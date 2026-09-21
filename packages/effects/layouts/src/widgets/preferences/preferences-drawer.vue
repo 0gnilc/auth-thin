@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { SupportedLanguagesType } from '@vben/locales';
 import type { CustomPreferencesRecord } from '@vben/preferences';
 import type {
   BreadcrumbStyleType,
@@ -18,7 +17,6 @@ import type { SegmentedItem } from '@vben-core/shadcn-ui';
 import { computed, ref } from 'vue';
 
 import { Copy, Pin, PinOff, RotateCw } from '@vben/icons';
-import { $t, loadLocaleMessages } from '@vben/locales';
 import {
   clearCache,
   preferences,
@@ -64,7 +62,6 @@ const emit = defineEmits<{ clearPreferencesAndLogout: [] }>();
 
 const message = globalShareState.getMessage();
 
-const appLocale = defineModel<SupportedLanguagesType>('appLocale');
 const appTimezone = defineModel<string>('appTimezone');
 const appDynamicTitle = defineModel<boolean>('appDynamicTitle');
 const appLayout = defineModel<LayoutType>('appLayout');
@@ -180,9 +177,6 @@ const widgetGlobalSearchButtonPosition = defineModel<string>(
 const widgetFullscreenButtonPosition = defineModel<string>(
   'widgetFullscreenButtonPosition',
 );
-const widgetLanguageToggleButtonPosition = defineModel<string>(
-  'widgetLanguageToggleButtonPosition',
-);
 const widgetNotificationButtonPosition = defineModel<string>(
   'widgetNotificationButtonPosition',
 );
@@ -228,15 +222,13 @@ const customPreferencesTab = computed(() => {
 });
 
 const customTabLabel = computed(() => {
-  return customPreferencesTab.value?.tabLabel
-    ? $t(customPreferencesTab.value.tabLabel)
-    : '';
+  return customPreferencesTab.value?.tabLabel || '';
 });
 
 const customTabTitle = computed(() => {
   const title =
     customPreferencesTab.value?.title || customPreferencesTab.value?.tabLabel;
-  return title ? $t(title) : '';
+  return title || '';
 });
 
 const mergedDiffPreference = computed(() => {
@@ -260,19 +252,19 @@ const showCustomTab = computed(() => {
 const tabs = computed((): SegmentedItem[] => {
   const items: SegmentedItem[] = [
     {
-      label: $t('preferences.appearance'),
+      label: '外观',
       value: 'appearance',
     },
     {
-      label: $t('preferences.layout'),
+      label: '布局',
       value: 'layout',
     },
     {
-      label: $t('preferences.shortcutKeys.title'),
+      label: '快捷键',
       value: 'shortcutKey',
     },
     {
-      label: $t('preferences.general'),
+      label: '通用',
       value: 'general',
     },
   ];
@@ -300,8 +292,8 @@ async function handleCopy() {
   await copy(JSON.stringify(mergedDiffPreference.value, null, 2));
 
   message.copyPreferencesSuccess?.(
-    $t('preferences.copyPreferencesSuccessTitle'),
-    $t('preferences.copyPreferencesSuccess'),
+    '复制成功',
+    '复制成功，请在 app 下的 `src/preferences.ts`内进行覆盖',
   );
 }
 
@@ -316,7 +308,6 @@ async function handleReset() {
     return;
   }
   await resetPreferences();
-  await loadLocaleMessages(preferences.app.locale);
 }
 
 function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
@@ -327,15 +318,15 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
 <template>
   <div>
     <Drawer
-      :description="$t('preferences.subtitle')"
-      :title="$t('preferences.title')"
+      description="自定义偏好设置 & 实时预览"
+      title="偏好设置"
       class="border-0! sm:max-w-sm"
     >
       <template #extra>
         <div class="flex items-center">
           <VbenIconButton
             :disabled="!mergedDiffPreference"
-            :tooltip="$t('preferences.resetTip')"
+            tooltip="数据有变化，点击可进行重置"
             class="relative"
             @click="handleReset"
           >
@@ -348,8 +339,8 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
           <VbenIconButton
             :tooltip="
               appEnableStickyPreferencesNavigationBar
-                ? $t('preferences.disableStickyPreferencesNavigationBar')
-                : $t('preferences.enableStickyPreferencesNavigationBar')
+                ? '关闭首选项导航栏吸顶效果'
+                : '开启首选项导航栏吸顶效果'
             "
             class="relative"
             @click="
@@ -376,19 +367,18 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
           }"
         >
           <template #general>
-            <Block :title="$t('preferences.general')">
+            <Block title="通用">
               <General
                 v-model:app-dynamic-title="appDynamicTitle"
                 v-model:app-enable-check-updates="appEnableCheckUpdates"
                 v-model:app-enable-copy-preferences="appEnableCopyPreferences"
-                v-model:app-locale="appLocale"
                 v-model:app-timezone="appTimezone"
                 v-model:app-watermark="appWatermark"
                 v-model:app-watermark-content="appWatermarkContent"
               />
             </Block>
 
-            <Block :title="$t('preferences.animation.title')">
+            <Block title="动画">
               <Animation
                 v-model:transition-enable="transitionEnable"
                 v-model:transition-loading="transitionLoading"
@@ -398,7 +388,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
             </Block>
           </template>
           <template #appearance>
-            <Block :title="$t('preferences.theme.title')">
+            <Block title="主题">
               <Theme
                 v-model="themeMode"
                 v-model:theme-semi-dark-header="themeSemiDarkHeader"
@@ -406,20 +396,20 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
                 v-model:theme-semi-dark-sidebar-sub="themeSemiDarkSidebarSub"
               />
             </Block>
-            <Block :title="$t('preferences.theme.builtin.title')">
+            <Block title="内置主题">
               <BuiltinTheme
                 v-model="themeBuiltinType"
                 v-model:theme-color-primary="themeColorPrimary"
                 :is-dark="isDark"
               />
             </Block>
-            <Block :title="$t('preferences.theme.radius')">
+            <Block title="圆角">
               <Radius v-model="themeRadius" />
             </Block>
-            <Block :title="$t('preferences.theme.fontSize')">
+            <Block title="字体大小">
               <FontSize v-model="themeFontSize" />
             </Block>
-            <Block :title="$t('preferences.other')">
+            <Block title="其它">
               <ColorMode
                 v-model:app-color-gray-mode="appColorGrayMode"
                 v-model:app-color-weak-mode="appColorWeakMode"
@@ -427,14 +417,14 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
             </Block>
           </template>
           <template #layout>
-            <Block :title="$t('preferences.layout')">
+            <Block title="布局">
               <Layout v-model="appLayout" />
             </Block>
-            <Block :title="$t('preferences.content')">
+            <Block title="内容">
               <Content v-model="appContentCompact" />
             </Block>
 
-            <Block :title="$t('preferences.sidebar.title')">
+            <Block title="侧边栏">
               <Sidebar
                 v-model:sidebar-auto-activate-child="sidebarAutoActivateChild"
                 v-model:sidebar-draggable="sidebarDraggable"
@@ -450,7 +440,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
               />
             </Block>
 
-            <Block :title="$t('preferences.header.title')">
+            <Block title="顶栏">
               <Header
                 v-model:header-enable="headerEnable"
                 v-model:header-menu-align="headerMenuAlign"
@@ -459,7 +449,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
               />
             </Block>
 
-            <Block :title="$t('preferences.navigationMenu.title')">
+            <Block title="导航菜单">
               <Navigation
                 v-model:navigation-accordion="navigationAccordion"
                 v-model:navigation-split="navigationSplit"
@@ -469,7 +459,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
               />
             </Block>
 
-            <Block :title="$t('preferences.breadcrumb.title')">
+            <Block title="面包屑导航">
               <Breadcrumb
                 v-model:breadcrumb-enable="breadcrumbEnable"
                 v-model:breadcrumb-hide-only-one="breadcrumbHideOnlyOne"
@@ -482,7 +472,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
                 "
               />
             </Block>
-            <Block :title="$t('preferences.tabbar.title')">
+            <Block title="标签栏">
               <Tabbar
                 v-model:tabbar-draggable="tabbarDraggable"
                 v-model:tabbar-enable="tabbarEnable"
@@ -497,7 +487,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
                 v-model:tabbar-middle-click-to-close="tabbarMiddleClickToClose"
               />
             </Block>
-            <Block :title="$t('preferences.widget.title')">
+            <Block title="小部件">
               <Widget
                 v-model:app-preferences-button-position="
                   appPreferencesButtonPosition
@@ -507,9 +497,6 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
                 "
                 v-model:widget-global-search-button-position="
                   widgetGlobalSearchButtonPosition
-                "
-                v-model:widget-language-toggle-button-position="
-                  widgetLanguageToggleButtonPosition
                 "
                 v-model:widget-lock-screen-button-position="
                   widgetLockScreenButtonPosition
@@ -532,16 +519,13 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
                 "
               />
             </Block>
-            <Block :title="$t('preferences.footer.title')">
+            <Block title="底栏">
               <Footer
                 v-model:footer-enable="footerEnable"
                 v-model:footer-fixed="footerFixed"
               />
             </Block>
-            <Block
-              v-if="copyrightSettingShow"
-              :title="$t('preferences.copyright.title')"
-            >
+            <Block v-if="copyrightSettingShow" title="版权">
               <Copyright
                 v-model:copyright-company-name="copyrightCompanyName"
                 v-model:copyright-company-site-link="copyrightCompanySiteLink"
@@ -555,7 +539,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
           </template>
 
           <template #shortcutKey>
-            <Block :title="$t('preferences.shortcutKeys.global')">
+            <Block title="全局">
               <GlobalShortcutKeys
                 v-model:shortcut-keys-enable="shortcutKeysEnable"
                 v-model:shortcut-keys-global-search="shortcutKeysGlobalSearch"
@@ -587,7 +571,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
           @click="handleCopy"
         >
           <Copy class="mr-2 size-3" />
-          {{ $t('preferences.copyPreferences') }}
+          复制偏好设置
         </VbenButton>
         <VbenButton
           :disabled="!mergedDiffPreference"
@@ -596,7 +580,7 @@ function handleCustomPreferencesUpdate(updates: CustomPreferencesRecord) {
           variant="ghost"
           @click="handleClearCache"
         >
-          {{ $t('preferences.clearAndLogout') }}
+          清空缓存 & 退出登录
         </VbenButton>
       </template>
     </Drawer>

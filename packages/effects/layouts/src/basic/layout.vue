@@ -2,20 +2,17 @@
 import type { SetupContext } from 'vue';
 import type { RouteLocationNormalizedLoaded } from 'vue-router';
 
-import type { MenuRecordRaw } from '@vben/types';
-
 import { computed, onMounted, useSlots, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useRefresh } from '@vben/hooks';
-import { $t, i18n } from '@vben/locales';
 import {
   preferences,
   updatePreferences,
   usePreferences,
 } from '@vben/preferences';
 import { useAccessStore, useTabbarStore, useTimezoneStore } from '@vben/stores';
-import { cloneDeep, mapTree } from '@vben/utils';
+import { cloneDeep } from '@vben/utils';
 
 import { VbenAdminLayout } from '@vben-core/layout-ui';
 import { VbenBackTop, VbenLogo } from '@vben-core/shadcn-ui';
@@ -168,21 +165,6 @@ const {
   sidebarExtraVisible,
 } = useExtraMenu(mixHeaderMenus);
 
-/**
- * 包装菜单，翻译菜单名称
- * @param menus 原始菜单数据
- * @param deep 是否深度包装。对于双列布局，只需要包装第一层，因为更深层的数据会在扩展菜单中重新包装
- */
-function wrapperMenus(menus: MenuRecordRaw[], deep: boolean = true) {
-  return deep
-    ? mapTree(menus, (item) => {
-        return { ...cloneDeep(item), name: $t(item.name) };
-      })
-    : menus.map((item) => {
-        return { ...cloneDeep(item), name: $t(item.name) };
-      });
-}
-
 function toggleSidebar() {
   updatePreferences({
     sidebar: {
@@ -241,10 +223,6 @@ function refreshAll() {
   tabbarStore.cachedTabs.clear();
   refresh();
 }
-
-// 语言更新后，刷新页面
-// i18n.global.locale会在preference.app.locale变更之后才会更新，因此watchpreference.app.locale是不合适的，刷新页面时可能语言配置尚未完全加载完成
-watch(i18n.global.locale, refreshAll, { flush: 'post' });
 
 // 时区更新后，刷新页面
 watch(() => timezoneStore.timezone, refreshAll, { flush: 'post' });
@@ -360,7 +338,7 @@ const headerSlots = computed(() => {
         <template v-if="showHeaderNav" #menu>
           <LayoutMenu
             :default-active="headerActive"
-            :menus="wrapperMenus(headerMenus)"
+            :menus="cloneDeep(headerMenus)"
             :rounded="isMenuRounded"
             :theme="headerTheme"
             class="w-full"
@@ -386,7 +364,7 @@ const headerSlots = computed(() => {
         :collapse="preferences.sidebar.collapsed"
         :collapse-show-title="preferences.sidebar.collapsedShowTitle"
         :default-active="sidebarActive"
-        :menus="wrapperMenus(sidebarMenus)"
+        :menus="cloneDeep(sidebarMenus)"
         :rounded="isMenuRounded"
         :theme="sidebarTheme"
         mode="vertical"
@@ -397,7 +375,7 @@ const headerSlots = computed(() => {
     <template #mixed-menu>
       <LayoutMixedMenu
         :active-path="extraActiveMenu"
-        :menus="wrapperMenus(mixHeaderMenus, false)"
+        :menus="cloneDeep(mixHeaderMenus)"
         :rounded="isMenuRounded"
         :theme="sidebarTheme"
         @default-select="handleDefaultSelect"
@@ -410,7 +388,7 @@ const headerSlots = computed(() => {
       <LayoutExtraMenu
         :accordion="preferences.navigation.accordion"
         :collapse="preferences.sidebar.extraCollapse"
-        :menus="wrapperMenus(extraMenus)"
+        :menus="cloneDeep(extraMenus)"
         :rounded="isMenuRounded"
         :theme="sidebarThemeSub"
       />

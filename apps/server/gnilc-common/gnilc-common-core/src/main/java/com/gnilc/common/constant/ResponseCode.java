@@ -33,6 +33,6 @@ public enum ResponseCode {
 
     /** 响应体中的稳定业务码，不表示 HTTP 状态。 */
     private final Integer code;
-    /** 该业务码的默认说明；面向用户的具体错误可由本地化消息替代。 */
+    /** 该业务码的默认说明；面向用户的具体错误由所属业务提供中文文案。 */
     private final String message;
 }

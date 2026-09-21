@@ -1,6 +1,6 @@
 # Admin System
 
-Admin manages administrator identities, role assignments, navigation and dynamic internationalization.
+Admin manages administrator identities, role assignments, navigation.
 
 ## Identity And Access
 
@@ -22,7 +22,7 @@ Admin manages administrator identities, role assignments, navigation and dynamic
 
 **Built-in RBAC Resource**: A system-maintained Role, Permission, or Menu whose protected identity is independent of its assignments. The [role catalog](../../docs/role/role-design.md) explains the current access model.
 
-## Navigation And Messages
+## Navigation
 
 **Current Admin Navigation Route Tree**: The enabled, reachable menus available to the current administrator, including ancestors needed to reach usable pages.
 
@@ -30,6 +30,4 @@ Admin manages administrator identities, role assignments, navigation and dynamic
 
 **Button Menu**: A frontend action whose access code controls visibility independently of backend API enforcement.
 
-**Message Key**: The globally unique identity of a dynamic message across locales and categories.
-
-**I18n Message Category**: The mutable grouping used for message administration and runtime bundles, independent of message identity. Dynamic messages provide optional display text to business resources; [ADR-0010](../../docs/adr/0010-keep-dynamic-i18n-auxiliary-to-business-resources.md) explains their separate lifecycle.
+**Menu Title**: The display text maintained with a menu, shared by navigation, breadcrumbs and tabs.

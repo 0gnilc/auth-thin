@@ -3,7 +3,6 @@ package com.gnilc.auth.authz.rbac.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gnilc.common.base.Preconditions;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.auth.authz.rbac.dao.UserRoleDao;
 import com.gnilc.auth.authz.rbac.entity.bo.UserRoleBo;
 import com.gnilc.auth.authz.rbac.entity.dto.UserRoleDto;
@@ -19,30 +18,26 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 import java.util.Set;
 
-
 /** 维护用户角色关系，在移除前执行应用提供的必需角色策略并发布授权变化事件。 */
 @Service("userRoleService")
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleDao, UserRoleBo> implements UserRoleService {
 
     private final ApplicationEventPublisher eventPublisher;
     private final List<RequiredRolePolicy> requiredRolePolicies;
-    private final I18nMessageService messages;
 
     public UserRoleServiceImpl(ApplicationEventPublisher eventPublisher,
-                               List<RequiredRolePolicy> requiredRolePolicies,
-                               I18nMessageService messages) {
+                               List<RequiredRolePolicy> requiredRolePolicies) {
         this.eventPublisher = eventPublisher;
         this.requiredRolePolicies = requiredRolePolicies;
-        this.messages = messages;
     }
 
     @Transactional
     @Override
     public void updateUserRole(UserRoleDto dto) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.assignment.userRole.required"));
+        Preconditions.checkArgument(dto != null, "用户角色分配信息不能为空。");
         Long userId = dto.getUserId();
         List<Long> roleIds = dto.getRoleIds();
-        Preconditions.checkArgument(userId != null, messages.get("rbac.user.selection.required"));
+        Preconditions.checkArgument(userId != null, "请选择用户。");
         Set<Long> oldSet = Set.copyOf(getRoleIds(userId));
         Set<Long> newSet = CollectionUtils.isEmpty(roleIds) ? Set.of() : Sets.newHashSet(roleIds);
 
@@ -179,6 +174,6 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleDao, UserRoleBo> im
     private void ensureRemovable(Long userId, Set<Long> roleIds) {
         boolean required = roleIds.stream().anyMatch(roleId -> requiredRolePolicies.stream()
                 .anyMatch(policy -> policy.isRequired(userId, roleId)));
-        Preconditions.checkCondition(!required, messages.get("rbac.assignment.requiredRole.remove"));
+        Preconditions.checkCondition(!required, "不能移除必需的基础角色。");
     }
 }

@@ -12,7 +12,6 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
 import { useVbenForm } from '#/adapter/form';
 import { createPermission, updatePermission } from '#/api/system';
-import { $t } from '#/locales';
 
 const emit = defineEmits<{ success: [] }>();
 
@@ -43,27 +42,27 @@ const schema: VbenFormSchema[] = [
   {
     component: 'Input',
     fieldName: 'code',
-    label: $t('systemPermission.form.code'),
+    label: '权限标识',
     rules: 'required',
   },
   {
     component: 'Input',
     fieldName: 'name',
-    label: $t('systemPermission.form.name'),
+    label: '权限名称',
     rules: 'required',
   },
   {
     component: 'Input',
     componentProps: {
-      placeholder: $t('systemPermission.form.qualifierPlaceholder'),
+      placeholder: '例如 POST',
     },
     fieldName: 'targetQualifier',
-    label: $t('systemPermission.form.qualifier'),
+    label: '目标限定符',
   },
   {
     component: 'Input',
     fieldName: 'targetIdentifier',
-    label: $t('systemPermission.form.targetIdentifier'),
+    label: '访问目标标识',
     rules: 'required',
   },
   {
@@ -71,14 +70,14 @@ const schema: VbenFormSchema[] = [
     componentProps: { rows: 3, type: 'textarea' },
     fieldName: 'remark',
     formItemClass: 'col-span-full',
-    label: $t('systemPermission.form.remark'),
+    label: '描述',
   },
   {
     component: 'Switch',
     defaultValue: false,
-    description: $t('systemPermission.form.publicHint'),
+    description: '无需角色授权即可访问',
     fieldName: 'publicAccess',
-    label: $t('systemPermission.form.publicAccess'),
+    label: '公开访问',
   },
 ];
 
@@ -106,8 +105,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (!initialPublicAccess.value && values.publicAccess) {
       try {
         await ElMessageBox.confirm(
-          $t('systemPermission.messages.publicConfirm'),
-          $t('systemPermission.messages.publicTitle'),
+          '开启后，该访问目标将绕过角色授权检查。确定公开访问吗？',
+          '确认公开访问',
           { type: 'warning' },
         );
       } catch {
@@ -129,7 +128,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         ? updatePermission({ id: values.id, ...data })
         : createPermission(data));
       saved.value = true;
-      ElMessage.success($t('systemPermission.messages.saveSuccess'));
+      ElMessage.success('权限已保存');
       emit('success');
       await drawerApi.close();
     } finally {
@@ -151,9 +150,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       targetQualifier: row.targetQualifier ?? '',
     };
     drawerApi.setState({
-      title: row.id
-        ? $t('systemPermission.drawer.editTitle')
-        : $t('systemPermission.drawer.createTitle'),
+      title: row.id ? '修改权限' : '新增权限',
     });
     await formApi.reset();
     await nextTick();

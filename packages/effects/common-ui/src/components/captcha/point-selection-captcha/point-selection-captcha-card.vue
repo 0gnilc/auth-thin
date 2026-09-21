@@ -3,8 +3,6 @@ import type { PointSelectionCaptchaCardProps } from '../types';
 
 import { computed } from 'vue';
 
-import { $t } from '@vben/locales';
-
 import {
   Card,
   CardContent,
@@ -54,7 +52,7 @@ function handleClick(e: MouseEvent) {
     <CardHeader class="p-0">
       <CardTitle id="captcha-title" class="flex items-center justify-between">
         <template v-if="$slots.title">
-          <slot name="title">{{ $t('ui.captcha.title') }}</slot>
+          <slot name="title">请完成安全验证</slot>
         </template>
         <template v-else>
           <span>{{ title }}</span>
@@ -69,7 +67,7 @@ function handleClick(e: MouseEvent) {
     >
       <img
         v-show="captchaImage"
-        :alt="$t('ui.captcha.alt')"
+        alt="支持img标签src属性值"
         :src="captchaImage"
         :style="captchaStyles"
         class="relative z-10"

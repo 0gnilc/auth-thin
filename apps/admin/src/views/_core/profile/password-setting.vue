@@ -10,7 +10,6 @@ import { ProfilePasswordSetting, z } from '@vben/common-ui';
 import { ElMessage } from 'element-plus';
 
 import { updatePassword } from '#/api/core';
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 
 const authStore = useAuthStore();
@@ -18,8 +17,8 @@ const authStore = useAuthStore();
 const formSchema = computed((): VbenFormSchema[] => {
   const strongPassword = z
     .string()
-    .min(8, { message: $t('profile.form.passwordMinLength') })
-    .max(32, { message: $t('profile.form.passwordMaxLength') })
+    .min(8, { message: '密码至少 8 个字符' })
+    .max(32, { message: '密码最多 32 个字符' })
     .refine(
       (value) =>
         !/\s/.test(value) &&
@@ -27,51 +26,49 @@ const formSchema = computed((): VbenFormSchema[] => {
         /[A-Z]/.test(value) &&
         /\d/.test(value) &&
         /[^A-Za-z0-9]/.test(value),
-      { message: $t('profile.form.passwordComplexity') },
+      { message: '密码需包含大小写字母、数字和特殊字符，且不能含空白' },
     );
 
   return [
     {
       fieldName: 'oldPassword',
-      label: $t('profile.form.oldPassword'),
+      label: '旧密码',
       component: 'VbenInputPassword',
       componentProps: {
-        placeholder: $t('profile.form.oldPasswordPlaceholder'),
+        placeholder: '请输入旧密码',
       },
-      rules: z
-        .string()
-        .min(1, { message: $t('profile.form.oldPasswordPlaceholder') }),
+      rules: z.string().min(1, { message: '请输入旧密码' }),
     },
     {
       fieldName: 'newPassword',
-      label: $t('profile.form.newPassword'),
+      label: '新密码',
       component: 'VbenInputPassword',
       componentProps: {
         passwordStrength: true,
-        placeholder: $t('profile.form.newPasswordPlaceholder'),
+        placeholder: '请输入新密码',
       },
       rules: strongPassword,
     },
     {
       fieldName: 'confirmPassword',
-      label: $t('profile.form.confirmPassword'),
+      label: '确认密码',
       component: 'VbenInputPassword',
       componentProps: {
         passwordStrength: true,
-        placeholder: $t('profile.form.confirmPasswordPlaceholder'),
+        placeholder: '请再次输入新密码',
       },
       dependencies: {
         rules(values) {
           const { newPassword } = values;
           return z
             .string({
-              error: $t('profile.form.confirmPasswordPlaceholder'),
+              error: '请再次输入新密码',
             })
             .min(1, {
-              message: $t('profile.form.confirmPasswordPlaceholder'),
+              message: '请再次输入新密码',
             })
             .refine((value) => value === newPassword, {
-              message: $t('profile.form.passwordMismatch'),
+              message: '两次输入的密码不一致',
             });
         },
         triggerFields: ['newPassword'],
@@ -82,7 +79,7 @@ const formSchema = computed((): VbenFormSchema[] => {
 
 async function handleSubmit(values: Recordable<any>) {
   await updatePassword(values.oldPassword, values.newPassword);
-  ElMessage.success($t('profile.messages.passwordUpdated'));
+  ElMessage.success('密码已修改，请重新登录');
   await authStore.resetSessionToLogin();
 }
 </script>

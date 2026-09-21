@@ -2,31 +2,29 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { AdminApi } from '#/api/system';
 
-import { $t } from '#/locales';
-
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
       fieldName: 'username',
-      label: $t('systemAdmin.form.username'),
+      label: '用户名',
     },
     {
       component: 'Input',
       fieldName: 'nickname',
-      label: $t('systemAdmin.form.nickname'),
+      label: '昵称',
     },
     {
       component: 'Select',
       componentProps: {
         clearable: true,
         options: [
-          { label: $t('rbacCommon.enabled'), value: true },
-          { label: $t('rbacCommon.disabled'), value: false },
+          { label: '启用', value: true },
+          { label: '禁用', value: false },
         ],
       },
       fieldName: 'status',
-      label: $t('systemAdmin.filters.status'),
+      label: '启用状态',
     },
   ];
 }
@@ -41,19 +39,19 @@ export function useColumns(
     {
       field: 'username',
       minWidth: 150,
-      title: $t('systemAdmin.table.username'),
+      title: '用户名',
     },
     {
       field: 'nickname',
       minWidth: 150,
-      title: $t('systemAdmin.table.nickname'),
+      title: '昵称',
     },
     {
       field: 'roleCodes',
       minWidth: 220,
       showOverflow: false,
       slots: { default: 'roles' },
-      title: $t('systemAdmin.table.roles'),
+      title: '角色',
     },
     {
       align: 'center',
@@ -62,13 +60,13 @@ export function useColumns(
         name: onStatusChange ? 'CellSwitch' : 'CellTag',
       },
       field: 'status',
-      title: $t('systemAdmin.table.status'),
+      title: '状态',
       width: 100,
     },
     {
       field: 'createTime',
       formatter: 'formatDateTime',
-      title: $t('systemAdmin.table.createTime'),
+      title: '创建时间',
       width: 180,
     },
     {
@@ -76,7 +74,7 @@ export function useColumns(
       field: 'operation',
       fixed: 'right',
       slots: { default: 'action' },
-      title: $t('rbacCommon.actions'),
+      title: '操作',
       width: 200,
     },
   ];

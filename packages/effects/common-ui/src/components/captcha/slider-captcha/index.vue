@@ -7,8 +7,6 @@ import type {
 
 import { reactive, unref, useTemplateRef, watch } from 'vue';
 
-import { $t } from '@vben/locales';
-
 import { cn } from '@vben-core/shared/utils';
 
 import { useTimeoutFn } from '@vueuse/core';
@@ -238,8 +236,8 @@ function resume() {
       ref="contentRef"
       :content-style="contentStyle"
       :is-passing="state.isPassing"
-      :success-text="successText || $t('ui.captcha.sliderSuccessText')"
-      :text="text || $t('ui.captcha.sliderDefaultText')"
+      :success-text="successText || '验证通过'"
+      :text="text || '请按住滑块拖动'"
     >
       <template v-if="$slots.text" #text>
         <slot :is-passing="state.isPassing" name="text"></slot>

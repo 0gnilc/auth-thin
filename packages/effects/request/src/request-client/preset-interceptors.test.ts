@@ -158,7 +158,7 @@ describe('authenticateResponseInterceptor', () => {
 });
 
 describe('errorMessageResponseInterceptor', () => {
-  it('lets the application resolve and display the current localized message', async () => {
+  it('lets the application resolve and display the application-provided message', async () => {
     const onError = vi.fn();
     const resolveMessage = vi.fn(() => 'Request forbidden');
     const interceptor = errorMessageResponseInterceptor({
@@ -175,7 +175,7 @@ describe('errorMessageResponseInterceptor', () => {
     expect(onError).toHaveBeenCalledWith('Request forbidden', error);
   });
 
-  it('classifies network and timeout failures independently of translations', async () => {
+  it('classifies network and timeout failures independently of presentation', async () => {
     const onError = vi.fn();
     const resolveMessage = vi.fn((type: string) => type);
     const interceptor = errorMessageResponseInterceptor({

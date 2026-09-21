@@ -11,7 +11,6 @@ import com.gnilc.common.config.LongNumberJacksonConfiguration;
 import com.gnilc.common.config.MyMetaObjectHandler;
 import com.gnilc.common.config.MybatisPlusConfiguration;
 import com.gnilc.common.config.ServletCorsConfiguration;
-import com.gnilc.common.i18n.I18nMessageService;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.*;
         MybatisPlusConfiguration.class,
         ServletCorsConfiguration.class,
         PermissionCacheRedisConfiguration.class,
-        I18nMessageService.class
 })
 public class ServletRbacAuthorizationAutoConfiguration {
 

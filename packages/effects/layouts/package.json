@@ -1,6 +1,7 @@
 {
   "name": "@vben/layouts",
   "version": "1.0.0-rc.1",
+  "private": true,
   "homepage": "https://github.com/vbenjs/vue-vben-admin",
   "bugs": "https://github.com/vbenjs/vue-vben-admin/issues",
   "repository": {
@@ -30,10 +31,8 @@
     "@vben-core/shadcn-ui": "workspace:*",
     "@vben-core/shared": "workspace:*",
     "@vben-core/tabs-ui": "workspace:*",
-    "@vben/constants": "workspace:*",
     "@vben/hooks": "workspace:*",
     "@vben/icons": "workspace:*",
-    "@vben/locales": "workspace:*",
     "@vben/preferences": "workspace:*",
     "@vben/stores": "workspace:*",
     "@vben/types": "workspace:*",
@@ -45,6 +44,5 @@
   },
   "devDependencies": {
     "@vue/test-utils": "catalog:"
-  },
-  "private": true
+  }
 }

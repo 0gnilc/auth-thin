@@ -7,7 +7,6 @@ import type {
   LibraryPluginOptions,
 } from '../typing';
 
-import viteVueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import tailwindcss from '@tailwindcss/vite';
 import viteVue from '@vitejs/plugin-vue';
 import viteVueJsx from '@vitejs/plugin-vue-jsx';
@@ -107,7 +106,6 @@ async function loadApplicationPlugins(
     extraAppConfig,
     html,
     dayjs,
-    i18n,
     importmap,
     importmapOptions,
     injectAppLoading,
@@ -126,18 +124,6 @@ async function loadApplicationPlugins(
 
   return await loadConditionPlugins([
     ...commonPlugins,
-    {
-      condition: i18n,
-      plugins: async () => {
-        return [
-          viteVueI18nPlugin({
-            compositionOnly: true,
-            fullInstall: true,
-            runtimeOnly: true,
-          }),
-        ];
-      },
-    },
     {
       condition: print,
       plugins: async () => {

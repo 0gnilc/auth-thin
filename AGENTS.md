@@ -12,7 +12,7 @@ Choose implementation and verification methods using your judgment. Challenge ou
 
 - Vue components use `<script setup lang="ts">`. Prefer inferred TypeScript types inside typed boundaries.
 - For new or changed semantic classes in project-owned Vue UI, use kebab-case BEM: `block`, `block__element`, `block--modifier`. Existing upstream classes and utility or third-party tokens keep their conventions.
-- Keep user-facing text in the owning localization resources.
+- Use Simplified Chinese user-facing text in its owning component or business module. Menu titles are display text.
 - Write project-owned explanatory comments and database `COMMENT` text in Chinese, retaining necessary technical terms and identifiers. Comments explain non-obvious reasons and constraints; important contracts must not exist only in chat history.
 - Document every business type and field with Javadoc/JSDoc. Keep simple field descriptions brief; explain units, precision, time zones, null semantics, and snapshots where relevant.
 - Document inherited fields at their declaration, and synchronize related comments and database `COMMENT` text when business contracts change.

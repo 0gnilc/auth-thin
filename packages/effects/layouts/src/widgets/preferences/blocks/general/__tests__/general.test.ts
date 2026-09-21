@@ -11,8 +11,6 @@ const runtime = vi.hoisted(() => ({
   timezone: 'Asia/Shanghai',
 }));
 
-vi.mock('@vben/constants', () => ({ SUPPORT_LANGUAGES: [] }));
-vi.mock('@vben/locales', () => ({ $t: (key: string) => key }));
 vi.mock('@vben/stores', () => ({ useTimezoneStore: () => runtime }));
 
 describe('preference timezone selection', () => {
@@ -32,8 +30,8 @@ describe('preference timezone selection', () => {
     await flushPromises();
 
     const selects = wrapper.findAllComponents(SelectItem);
-    expect(selects).toHaveLength(2);
-    selects[1]?.vm.$emit('update:modelValue', 'Africa/Lagos');
+    expect(selects).toHaveLength(1);
+    selects[0]?.vm.$emit('update:modelValue', 'Africa/Lagos');
     await flushPromises();
 
     expect(runtime.setTimezone).toHaveBeenCalledWith('Africa/Lagos');

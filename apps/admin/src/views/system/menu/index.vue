@@ -18,11 +18,10 @@ import {
   getRoleMenuIds,
   removeMenu,
 } from '#/api/system';
-import { $t } from '#/locales';
 
 import Form from './components/form.vue';
 import {
-  menuTypeMessageKeys,
+  menuTypeLabels,
   menuTypeTagTypes,
   useColumns,
   useGridFormSchema,
@@ -40,7 +39,7 @@ function filterTree(items: MenuApi.Menu[], keyword: string): MenuApi.Menu[] {
   return items.flatMap((item) => {
     const children = filterTree(item.children ?? [], keyword);
     const matches =
-      `${$t(item.title)} ${item.name} ${item.path ?? ''} ${item.accessCode ?? ''}`
+      `${item.title} ${item.name} ${item.path ?? ''} ${item.accessCode ?? ''}`
         .toLocaleLowerCase()
         .includes(keyword);
     return matches || children.length > 0 ? [{ ...item, children }] : [];
@@ -123,19 +122,15 @@ async function onDelete(row: MenuApi.Menu) {
   );
   try {
     await ElMessageBox.confirm(
-      $t('systemMenu.messages.removeImpactConfirm', {
-        descendants: subtreeIds.size - 1,
-        name: $t(row.title),
-        roles: affectedRoles.length,
-      }),
-      $t('systemMenu.messages.removeTitle'),
+      `确定删除“${row.title}”吗？将同时删除 ${subtreeIds.size - 1} 个下级节点，并影响 ${affectedRoles.length} 个角色的菜单授权。`,
+      '删除菜单',
       { type: 'warning' },
     );
   } catch {
     return;
   }
   await removeMenu(row.id);
-  ElMessage.success($t('systemMenu.messages.removeSuccess'));
+  ElMessage.success('菜单已删除');
   await gridApi.query();
 }
 
@@ -151,7 +146,7 @@ function refresh() {
 <template>
   <Page auto-content-height>
     <FormDrawer @success="refresh" />
-    <Grid :table-title="$t('systemMenu.title')">
+    <Grid table-title="菜单管理">
       <template #toolbar-tools>
         <VbenButton
           v-access:code="'system:menu:create'"
@@ -159,7 +154,7 @@ function refresh() {
           @click="onCreate()"
         >
           <IconifyIcon icon="lucide:plus" class="mr-2 size-4" />
-          {{ $t('systemMenu.actions.create') }}
+          新增菜单
         </VbenButton>
       </template>
 
@@ -173,13 +168,13 @@ function refresh() {
             "
             class="size-4 shrink-0"
           />
-          <span class="truncate">{{ $t(row.title) }}</span>
+          <span class="truncate">{{ row.title }}</span>
         </div>
       </template>
 
       <template #type="{ row }">
         <ElTag :type="menuTypeTagTypes[row.type]" effect="plain">
-          {{ $t(menuTypeMessageKeys[row.type]) }}
+          {{ menuTypeLabels[row.type] }}
         </ElTag>
       </template>
 
@@ -189,9 +184,7 @@ function refresh() {
 
       <template #status="{ row }">
         <ElTag :type="row.status ? 'success' : 'info'" effect="plain">
-          {{
-            row.status ? $t('rbacCommon.enabled') : $t('rbacCommon.disabled')
-          }}
+          {{ row.status ? '启用' : '禁用' }}
         </ElTag>
       </template>
 
@@ -201,16 +194,14 @@ function refresh() {
             {
               auth: 'system:menu:create',
               disabled: !canAppend(row),
-              text: $t('systemMenu.actions.append'),
+              text: '新增下级',
               onClick: () => onCreate(row.id),
             },
             {
               auth: 'system:menu:update',
               disabled: row.builtIn,
-              text: $t('rbacCommon.edit'),
-              tooltip: row.builtIn
-                ? $t('rbacCommon.builtInProtected')
-                : undefined,
+              text: '修改',
+              tooltip: row.builtIn ? '内置资源不可修改' : undefined,
               onClick: () => onEdit(row),
             },
           ]"
@@ -219,7 +210,7 @@ function refresh() {
               auth: 'system:menu:remove',
               danger: true,
               disabled: row.builtIn || hasBuiltInDescendant(row),
-              text: $t('rbacCommon.remove'),
+              text: '删除',
               onClick: () => onDelete(row),
             },
           ]"

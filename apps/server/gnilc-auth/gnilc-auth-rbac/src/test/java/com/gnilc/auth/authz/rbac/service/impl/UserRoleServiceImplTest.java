@@ -24,7 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 /** 验证应用指定的必需角色不可通过整组替换或单独解绑移除，其他角色仍可正常调整。 */
-class UserRoleServiceImplTest extends RbacMessageTestSupport {
+class UserRoleServiceImplTest {
     private final UserRoleDao dao = mock(UserRoleDao.class);
     private final RequiredRolePolicy requiredRoles = (userId, roleId) -> userId == 7L && roleId == 11L;
     private UserRoleServiceImpl userRoles;
@@ -38,16 +38,15 @@ class UserRoleServiceImplTest extends RbacMessageTestSupport {
         }
         userRoles = org.mockito.Mockito.spy(new UserRoleServiceImpl(
                 mock(ApplicationEventPublisher.class),
-                List.of(requiredRoles),
-                messages()));
+                List.of(requiredRoles)));
         ReflectionTestUtils.setField(userRoles, "baseMapper", dao);
     }
 
     @Test
-    void updateUserRoleRejectsMissingAssignmentWithTheDefaultLocale() {
+    void updateUserRoleRejectsMissingAssignmentWithChineseMessages() {
         assertThatThrownBy(() -> userRoles.updateUserRole(null))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("User role assignment information is required.");
+                .hasMessage("用户角色分配信息不能为空。");
     }
 
     @Test
@@ -59,7 +58,7 @@ class UserRoleServiceImplTest extends RbacMessageTestSupport {
 
         assertThatThrownBy(() -> userRoles.updateUserRole(dto))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The required baseline role cannot be removed.");
+                .hasMessage("不能移除必需的基础角色。");
 
         verify(dao, never()).delete(any());
         verify(dao, never()).insert(any(UserRoleBo.class));
@@ -69,7 +68,7 @@ class UserRoleServiceImplTest extends RbacMessageTestSupport {
     void unbindRoleRejectsARequiredRoleButAllowsOtherRoles() {
         assertThatThrownBy(() -> userRoles.unbindRole(7L, 11L))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The required baseline role cannot be removed.");
+                .hasMessage("不能移除必需的基础角色。");
         verify(dao, never()).delete(any());
 
         userRoles.unbindRole(7L, 12L);

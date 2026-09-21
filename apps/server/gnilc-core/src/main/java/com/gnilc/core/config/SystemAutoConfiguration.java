@@ -10,7 +10,6 @@ import com.gnilc.common.config.MyMetaObjectHandler;
 import com.gnilc.common.config.MybatisPlusConfiguration;
 import com.gnilc.common.config.ServletCorsConfiguration;
 import com.gnilc.common.exception.RestExceptionHandlingConfiguration;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.core.context.UserContextService;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -39,7 +38,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
         "com.gnilc.core.admin",
         "com.gnilc.core.auth",
         "com.gnilc.core.authz",
-        "com.gnilc.core.i18n",
         "com.gnilc.core.session"
 },
         excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Configuration.class))
@@ -49,7 +47,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
         MybatisPlusConfiguration.class,
         ServletCorsConfiguration.class,
         RestExceptionHandlingConfiguration.class,
-        I18nMessageService.class,
         UserContextService.class
 })
 public class SystemAutoConfiguration {

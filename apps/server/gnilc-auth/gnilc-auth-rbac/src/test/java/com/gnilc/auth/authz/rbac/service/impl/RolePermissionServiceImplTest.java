@@ -19,18 +19,17 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /** 验证内置角色不可重新分配权限，区分缺少选择与选择的权限已不存在。 */
-class RolePermissionServiceImplTest extends RbacMessageTestSupport {
+class RolePermissionServiceImplTest {
     @Test
-    void saveRolePermissionsRejectsMissingAssignmentWithTheDefaultLocale() {
+    void saveRolePermissionsRejectsMissingAssignmentWithChineseMessages() {
         RolePermissionServiceImpl rolePermissions = new RolePermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(PermissionService.class),
-                mock(RoleService.class),
-                messages());
+                mock(RoleService.class));
 
         assertThatThrownBy(() -> rolePermissions.saveRolePermissions(null))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Role permission assignment information is required.");
+                .hasMessage("角色权限分配信息不能为空。");
     }
 
     @Test
@@ -39,8 +38,7 @@ class RolePermissionServiceImplTest extends RbacMessageTestSupport {
         RolePermissionServiceImpl rolePermissions = new RolePermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(PermissionService.class),
-                roles,
-                messages());
+                roles);
         RoleBo builtIn = new RoleBo();
         builtIn.setId(7L);
         builtIn.setBuiltIn(true);
@@ -50,7 +48,7 @@ class RolePermissionServiceImplTest extends RbacMessageTestSupport {
 
         assertThatThrownBy(() -> rolePermissions.saveRolePermissions(dto))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in role permissions and menus cannot be modified.");
+                .hasMessage("内置角色的权限和菜单不能修改。");
         verify(roles).getById(7L);
         verify(roles, never()).updateById(builtIn);
     }
@@ -68,15 +66,14 @@ class RolePermissionServiceImplTest extends RbacMessageTestSupport {
         RolePermissionServiceImpl rolePermissions = new RolePermissionServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 permissions,
-                roles,
-                messages());
+                roles);
         RolePermissionDto dto = new RolePermissionDto();
         dto.setRoleId(7L);
         dto.setPermissionIds(java.util.List.of(11L, 12L));
 
         assertThatThrownBy(() -> rolePermissions.saveRolePermissions(dto))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The permission no longer exists. Refresh and try again.");
+                .hasMessage("权限已不存在，请刷新后重试。");
     }
 
     @Test
@@ -89,14 +86,14 @@ class RolePermissionServiceImplTest extends RbacMessageTestSupport {
         when(roles.getById(7L)).thenReturn(role);
         RolePermissionServiceImpl rolePermissions =
                 new RolePermissionServiceImpl(
-                        events, permissions, roles, messages());
+                        events, permissions, roles);
         RolePermissionDto dto = new RolePermissionDto();
         dto.setRoleId(7L);
         dto.setPermissionIds(java.util.Collections.singletonList(null));
 
         assertThatThrownBy(() -> rolePermissions.saveRolePermissions(dto))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("A permission must be selected.");
+                .hasMessage("请选择权限。");
 
         verifyNoInteractions(permissions, events);
     }

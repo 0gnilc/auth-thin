@@ -259,102 +259,88 @@ test('baseline administrators cannot see or call management capabilities', async
   expect(removeBody.code).toBe(0);
 });
 
-test('a dynamic Message Key is created without overwriting an existing resource', async ({
-  page,
-}) => {
-  const messageKey = `e2e.message.key${Date.now()}`;
-  const retryKey = `e2e.message.retry${Date.now()}`;
-  const managerSession = await loginSuccessfully(page, 'admin', '123456');
-  const headers = { Authorization: `Bearer ${managerSession.accessToken}` };
+/** 菜单树接口中用于检查显示文本的节点。 */
+interface MenuTitleRow {
+  /** 菜单记录 ID。 */
+  id: string;
+  /** 唯一路由名称。 */
+  name: string;
+  /** 直接展示的菜单标题。 */
+  title: string;
+}
 
-  await page.goto('/system/i18n-message');
-  await page.getByRole('button', { name: /Create|新增/ }).click();
-  const drawer = page.getByRole('dialog').filter({
-    hasText: /Create internationalization message|新增国际化消息/,
+test('菜单标题直接保存文本，编辑后刷新仍显示原文', async ({ page }) => {
+  const messageRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/sys/i18n-message/')) {
+      messageRequests.push(request.url());
+    }
   });
-  await drawer.getByLabel(/Message Key/).fill(messageKey);
-  await drawer.getByLabel('en-US').fill('E2E original message');
-  await drawer.getByLabel('zh-CN').fill('E2E 原始消息');
-  const createResponsePromise = page.waitForResponse((response) =>
-    response.url().endsWith('/api/sys/i18n-message/create'),
-  );
-  await drawer.getByRole('button', { name: /Confirm|确认/ }).click();
-  const createResponse = await createResponsePromise;
-  const createBody = await readApiResponse<{
-    category: string;
-    messageKey: string;
-  }>(createResponse);
-  expect(createBody.code).toBe(0);
-  expect(createBody.data.messageKey).toBe(messageKey);
-  await expect(drawer).toBeHidden();
-
-  const pageResponsePromise = page.waitForResponse((response) =>
-    response.url().endsWith('/api/sys/i18n-message/page'),
-  );
-  await page
-    .getByRole('textbox', { name: 'Message Key', exact: true })
-    .fill(messageKey);
-  await page.getByRole('button', { name: /^(Search|搜索)$/ }).click();
-  await pageResponsePromise;
-  await expect(rowContaining(page, messageKey)).toContainText(
-    'E2E original message',
-  );
-
-  await page.getByRole('button', { name: /Create|新增/ }).click();
-  await drawer.getByLabel(/Message Key/).fill(messageKey);
-  await drawer.getByLabel('en-US').fill('E2E replacement message');
-  await drawer.getByLabel('zh-CN').fill('E2E 替换消息');
-  const duplicateResponsePromise = page.waitForResponse((response) =>
-    response.url().endsWith('/api/sys/i18n-message/create'),
-  );
-  await drawer.getByRole('button', { name: /Confirm|确认/ }).click();
-  const duplicateResponse = await duplicateResponsePromise;
-  const duplicateBody = await readApiResponse(duplicateResponse);
-  expect(duplicateBody.code).toBe(10_001);
-  await expect(
-    page.getByText(/Message Key (?:already exists|已存在)/),
-  ).toBeVisible();
-  await expect(drawer).toBeVisible();
-  await expect(drawer.getByLabel(/Message Key/)).toHaveValue(messageKey);
-  await expect(drawer.getByLabel('en-US')).toHaveValue(
-    'E2E replacement message',
-  );
-
-  await drawer.getByLabel(/Message Key/).fill(retryKey);
-  const retryResponsePromise = page.waitForResponse((response) =>
-    response.url().endsWith('/api/sys/i18n-message/create'),
-  );
-  await drawer.getByRole('button', { name: /Confirm|确认/ }).click();
-  const retryResponse = await retryResponsePromise;
-  const retryBody = await readApiResponse(retryResponse);
-  expect(retryBody.code).toBe(0);
-  await expect(drawer).toBeHidden();
-
-  const valuesResponse = await page.request.post(
-    `/api/sys/i18n-message/values/${encodeURIComponent(messageKey)}`,
-    { headers },
-  );
-  const valuesBody = await readApiResponse(valuesResponse);
-  expect(valuesBody.data).toMatchObject({
-    category: createBody.data.category,
-    messageKey,
-    values: expect.arrayContaining([
-      { locale: 'en-US', value: 'E2E original message' },
-      { locale: 'zh-CN', value: 'E2E 原始消息' },
-    ]),
+  const session = await loginSuccessfully(page, 'admin', '123456');
+  const headers = { Authorization: `Bearer ${session.accessToken}` };
+  const name = `StandardMenu${Date.now()}`;
+  const title = `运营.日报-${name}`;
+  const createResponse = await page.request.post('/api/authz/menu/create', {
+    headers,
+    data: {
+      affixTab: false,
+      component: 'BasicLayout',
+      fullPathKey: true,
+      hideChildrenInMenu: false,
+      hideInBreadcrumb: false,
+      hideInMenu: false,
+      hideInTab: false,
+      keepAlive: false,
+      name,
+      noBasicLayout: false,
+      openInNewWindow: false,
+      order: 999,
+      path: `/standard-${name}`,
+      pid: '0',
+      status: true,
+      title,
+      type: 'catalog',
+    },
   });
+  const created = await readApiResponse(createResponse);
+  expect(created.code).toBe(0);
+  const treeResponse = await page.request.post('/api/authz/menu/tree', {
+    headers,
+  });
+  const tree = await readApiResponse<MenuTitleRow[]>(treeResponse);
+  const menu = tree.data.find((row) => row.name === name);
+  if (!menu) throw new Error('新建菜单未出现在菜单树中');
+  expect(menu.title).toBe(title);
 
-  const removeResponse = await page.request.post(
-    `/api/sys/i18n-message/remove/${encodeURIComponent(messageKey)}`,
-    { headers },
+  await page.goto('/system/menu');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+  await page.getByRole('textbox', { name: '关键词' }).fill(name);
+  await page.getByRole('button', { name: '搜索', exact: true }).click();
+  const row = rowContaining(page, name);
+  await expect(row).toContainText(title);
+  // VXE 的固定操作列单独渲染；筛选到唯一菜单后定位其可见操作。
+  await expect(row).toHaveCount(1);
+  await page.getByRole('button', { name: '修改', exact: true }).click();
+  const drawer = page.getByRole('dialog').filter({ hasText: '修改菜单' });
+  const input = drawer.getByLabel(/菜单标题/);
+  await expect(input).toHaveValue(title);
+  const updatedTitle = `${title}.已修改`;
+  await input.fill(updatedTitle);
+  const saved = page.waitForResponse((response) =>
+    response.url().endsWith('/api/authz/menu/update'),
   );
-  const removeBody = await readApiResponse(removeResponse);
-  expect(removeBody.code).toBe(0);
-
-  const removeRetryResponse = await page.request.post(
-    `/api/sys/i18n-message/remove/${encodeURIComponent(retryKey)}`,
-    { headers },
-  );
-  const removeRetryBody = await readApiResponse(removeRetryResponse);
-  expect(removeRetryBody.code).toBe(0);
+  await drawer.getByRole('button', { name: '确认', exact: true }).click();
+  const savedBody = await readApiResponse(await saved);
+  expect(savedBody.code).toBe(0);
+  await expect(drawer).toBeHidden();
+  await page.reload();
+  await page.getByRole('textbox', { name: '关键词' }).fill(name);
+  await page.getByRole('button', { name: '搜索', exact: true }).click();
+  await expect(rowContaining(page, name)).toContainText(updatedTitle);
+  expect(messageRequests).toEqual([]);
+  const removed = await page.request.post(`/api/authz/menu/remove/${menu.id}`, {
+    headers,
+  });
+  const removedBody = await readApiResponse(removed);
+  expect(removedBody.code).toBe(0);
 });

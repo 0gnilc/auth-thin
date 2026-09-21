@@ -14,8 +14,6 @@ import com.gnilc.auth.authz.rbac.event.MenuEvent;
 import com.gnilc.auth.authz.rbac.service.RoleMenuService;
 import com.gnilc.common.exception.IllegalConditionException;
 import com.gnilc.common.exception.InvalidArgumentException;
-import com.gnilc.common.i18n.I18nMessageService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +25,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ResourceBundleMessageSource;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -67,16 +62,11 @@ class MenuServiceImplTest {
                     new MapperBuilderAssistant(new MybatisConfiguration(), "menu-service-test"),
                     MenuBo.class);
         }
-        LocaleContextHolder.setLocale(Locale.US);
-        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
-        source.setBasename("i18n/rbac/messages");
-        source.setDefaultEncoding("UTF-8");
         menus = spy(new MenuServiceImpl(
                 menuDao,
                 roleMenuService,
                 eventPublisher,
-                new ObjectMapper(),
-                new I18nMessageService(source, "en-US")));
+                new ObjectMapper()));
         lenient().doAnswer(invocation -> new LambdaQueryChainWrapper<>(
                 menuDao, Wrappers.lambdaQuery(MenuBo.class)))
                 .when(menus).lambdaQuery();
@@ -85,11 +75,6 @@ class MenuServiceImplTest {
             ((MenuBo) invocation.getArgument(0)).setId(99L);
             return true;
         }).when(menus).save(any(MenuBo.class));
-    }
-
-    @AfterEach
-    void tearDown() {
-        LocaleContextHolder.resetLocaleContext();
     }
 
     @Test
@@ -158,7 +143,7 @@ class MenuServiceImplTest {
 
         assertThatThrownBy(() -> menus.updateMenu(update))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Page component is required.");
+                .hasMessage("页面组件不能为空。");
         verify(menus, never()).updateById(any(MenuBo.class));
         verifyNoInteractions(eventPublisher);
     }
@@ -188,7 +173,7 @@ class MenuServiceImplTest {
         assertThatThrownBy(() -> menus.createMenu(embedded))
                 .isInstanceOf(InvalidArgumentException.class)
                 .hasMessage(
-                        "Embedded Page URL must be a complete http or https address.");
+                        "内嵌页面地址必须是完整的 http 或 https URL。");
 
         MenuDto link = completeMenu(MenuType.LINK, 0L);
         link.setLink("javascript:alert(1)");
@@ -196,7 +181,7 @@ class MenuServiceImplTest {
         assertThatThrownBy(() -> menus.createMenu(link))
                 .isInstanceOf(InvalidArgumentException.class)
                 .hasMessage(
-                        "External URL must be a complete http or https address.");
+                        "外部链接必须是完整的 http 或 https URL。");
     }
 
     @ParameterizedTest(name = "preserves exact menu strings with {0} badge")
@@ -305,13 +290,12 @@ class MenuServiceImplTest {
 
         assertThatThrownBy(() -> menus.getMenusWithAncestors(Set.of(Long.MAX_VALUE), true))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("A selected menu no longer exists. Refresh and try again.");
+                .hasMessage("所选菜单已不存在，请刷新后重试。");
         verify(menus).list();
     }
 
     @Test
-    void getMenusWithAncestorsUsesTheRequestLocaleForValidationErrors() {
-        LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
+    void getMenusWithAncestorsUsesChineseValidationErrors() {
         doReturn(List.of(menu(1L, 0L, MenuType.CATALOG, "Root", "/root", 1)))
                 .when(menus).list();
 
@@ -352,7 +336,7 @@ class MenuServiceImplTest {
 
         assertThatThrownBy(() -> menus.removeMenu(1L))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("This menu contains built-in menus and cannot be deleted.");
+                .hasMessage("该菜单包含内置菜单，无法删除。");
         verify(menus, never()).updateById(any(MenuBo.class));
         verify(roleMenuService, never()).removeByMenuIds(anyList());
         verify(menus, never()).removeByIds(anyList());
@@ -369,10 +353,10 @@ class MenuServiceImplTest {
 
         assertThatThrownBy(() -> menus.updateMenu(update))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in menus cannot be modified.");
+                .hasMessage("内置菜单不能修改。");
         assertThatThrownBy(() -> menus.removeMenu(1L))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("Built-in menus cannot be deleted.");
+                .hasMessage("内置菜单不能删除。");
     }
 
     private MenuBo menu(Long id, Long pid, MenuType type, String name, String path, int order) {
@@ -459,42 +443,42 @@ class MenuServiceImplTest {
     private static Stream<Arguments> menuLengthBoundaries() {
         return Stream.of(
                 Arguments.of("name", 255, "\uD83D\uDE00", MenuType.CATALOG,
-                        "Menu name must not exceed 255 characters."),
+                        "菜单名称不能超过 255 个字符。"),
                 Arguments.of("title", 255, "t", MenuType.CATALOG,
-                        "Menu title must not exceed 255 characters."),
+                        "菜单标题不能超过 255 个字符。"),
                 Arguments.of("accessCode", 255, "a", MenuType.BUTTON,
-                        "Button access code must not exceed 255 characters."),
+                        "按钮权限码不能超过 255 个字符。"),
                 Arguments.of("path", 500, "p", MenuType.CATALOG,
-                        "Route path must not exceed 500 characters."),
+                        "路由路径不能超过 500 个字符。"),
                 Arguments.of("component", 255, "c", MenuType.MENU,
-                        "Component path must not exceed 255 characters."),
+                        "组件路径不能超过 255 个字符。"),
                 Arguments.of("redirect", 500, "r", MenuType.CATALOG,
-                        "Redirect path must not exceed 500 characters."),
+                        "重定向路径不能超过 500 个字符。"),
                 Arguments.of("activePath", 500, "a", MenuType.CATALOG,
-                        "Active menu path must not exceed 500 characters."),
+                        "激活菜单路径不能超过 500 个字符。"),
                 Arguments.of("badge", 100, "b", MenuType.CATALOG,
-                        "Badge content must not exceed 100 characters."),
+                        "徽标内容不能超过 100 个字符。"),
                 Arguments.of("badgeType", 16, "b", MenuType.CATALOG,
-                        "Badge type must not exceed 16 characters."),
+                        "徽标类型不能超过 16 个字符。"),
                 Arguments.of("badgeVariants", 32, "b", MenuType.CATALOG,
-                        "Badge variant must not exceed 32 characters."),
+                        "徽标样式不能超过 32 个字符。"),
                 Arguments.of("icon", 255, "i", MenuType.CATALOG,
-                        "Icon must not exceed 255 characters."),
+                        "图标不能超过 255 个字符。"),
                 Arguments.of("iframeSrc", 500, "i", MenuType.EMBEDDED,
-                        "Embedded page URL must not exceed 500 characters."),
+                        "内嵌页面 URL 不能超过 500 个字符。"),
                 Arguments.of("link", 500, "l", MenuType.LINK,
-                        "External URL must not exceed 500 characters."));
+                        "外链 URL 不能超过 500 个字符。"));
     }
 
     private static Stream<Arguments> missingTypeSpecificFields() {
         return Stream.of(
-                Arguments.of(MenuType.CATALOG, "path", "Route path is required."),
-                Arguments.of(MenuType.MENU, "path", "Route path is required."),
-                Arguments.of(MenuType.BUTTON, "accessCode", "Permission code is required."),
-                Arguments.of(MenuType.EMBEDDED, "path", "Route path is required."),
-                Arguments.of(MenuType.EMBEDDED, "iframeSrc", "Embedded page URL is required."),
-                Arguments.of(MenuType.LINK, "path", "Route path is required."),
-                Arguments.of(MenuType.LINK, "link", "External URL is required."));
+                Arguments.of(MenuType.CATALOG, "path", "路由路径不能为空。"),
+                Arguments.of(MenuType.MENU, "path", "路由路径不能为空。"),
+                Arguments.of(MenuType.BUTTON, "accessCode", "权限码不能为空。"),
+                Arguments.of(MenuType.EMBEDDED, "path", "路由路径不能为空。"),
+                Arguments.of(MenuType.EMBEDDED, "iframeSrc", "内嵌页面地址不能为空。"),
+                Arguments.of(MenuType.LINK, "path", "路由路径不能为空。"),
+                Arguments.of(MenuType.LINK, "link", "外部链接不能为空。"));
     }
 
     private static Stream<Arguments> exactMenuBadges() {

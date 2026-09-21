@@ -16,7 +16,7 @@ Gnilc Auth establishes administrator identities and controls their access to adm
 
 **Admin Baseline Role**: The mandatory `admin` role providing navigation and self-service access without management privileges.
 
-**Management Role**: An independently assignable set of administrator-management or internationalization capabilities.
+**Management Role**: An independently assignable set of administrator-management capabilities.
 
 **Built-in Resource**: A system-maintained role, permission or menu whose protected definition is distinct from its assignments.
 
@@ -24,4 +24,4 @@ Gnilc Auth establishes administrator identities and controls their access to adm
 
 **Menu**: A navigation resource or a UI action; visibility does not replace API authorization.
 
-**Message Key**: The global identity of a localized dynamic message, independent of its category and language.
+**Menu Title**: The display text maintained with a navigation resource.

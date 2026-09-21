@@ -67,7 +67,6 @@ vi.mock('@vben/stores', () => ({
   }),
 }));
 
-vi.mock('#/locales', () => ({ $t: (key: string) => key }));
 vi.mock('#/store', () => ({
   useAuthStore: () => ({ logout: vi.fn() }),
 }));

@@ -6,7 +6,6 @@ import type { ThemeModeType } from '@vben/types';
 import { watch } from 'vue';
 
 import { MoonStar, Sun, SunMoon } from '@vben/icons';
-import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import SwitchItem from '../switch-item.vue';
@@ -53,13 +52,13 @@ function activeClass(theme: string): string[] {
 function nameView(name: string) {
   switch (name) {
     case 'auto': {
-      return $t('preferences.followSystem');
+      return '跟随系统';
     }
     case 'dark': {
-      return $t('preferences.theme.dark');
+      return '深色';
     }
     case 'light': {
-      return $t('preferences.theme.light');
+      return '浅色';
     }
   }
 }
@@ -91,10 +90,10 @@ function nameView(name: string) {
         layout === 'header-nav' ||
         layout === 'full-content'
       "
-      :tip="$t('preferences.theme.darkSidebarTip')"
+      tip="当主题为浅色，布局不为水平菜单或不为内容全屏时可开启"
       class="mt-6"
     >
-      {{ $t('preferences.theme.darkSidebar') }}
+      深色侧边栏
     </SwitchItem>
     <SwitchItem
       v-model="themeSemiDarkSidebarSub"
@@ -103,12 +102,12 @@ function nameView(name: string) {
         (layout !== 'header-mixed-nav' && layout !== 'sidebar-mixed-nav') ||
         !themeSemiDarkSidebar
       "
-      :tip="$t('preferences.theme.darkSidebarSubTip')"
+      tip="当主题为浅色，开启深色侧边栏且布局使用双列菜单模式时可开启"
     >
-      {{ $t('preferences.theme.darkSidebarSub') }}
+      深色侧边栏子栏
     </SwitchItem>
     <SwitchItem v-model="themeSemiDarkHeader" :disabled="modelValue === 'dark'">
-      {{ $t('preferences.theme.darkHeader') }}
+      深色顶栏
     </SwitchItem>
   </div>
 </template>

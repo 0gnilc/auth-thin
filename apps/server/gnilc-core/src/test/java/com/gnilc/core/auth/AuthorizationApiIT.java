@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
@@ -35,7 +34,7 @@ class AuthorizationApiIT extends AdminApiTestSupport {
     private JdbcTemplate jdbc;
 
     @Test
-    void anonymousProtectedRequestIsForbiddenWithLocalizedJsonContract() {
+    void anonymousProtectedRequestIsForbiddenWithChineseJsonContract() {
         given()
                 .when()
                 .get("/api/sys/admin/user-info")
@@ -43,7 +42,7 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .statusCode(403)
                 .contentType("application/json;charset=UTF-8")
                 .body("code", equalTo(20003))
-                .body("error", equalTo("Access denied."));
+                .body("error", equalTo("访问被拒绝。"));
 
         given()
                 .header("Accept-Language", "zh-CN")
@@ -66,8 +65,7 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(200)
                 .body("data", hasItem("admin"))
-                .body("data", hasItem("rbac:manager"))
-                .body("data", not(hasItem("i18n:manager")));
+                .body("data", hasItem("rbac:manager"));
         given()
                 .header("Authorization", bearer(pair.getAccessToken()))
                 .when()
@@ -75,8 +73,7 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(200)
                 .body("data", hasItem("system:admin:create"))
-                .body("data", hasItem("system:role:manage-permissions"))
-                .body("data", not(hasItem("system:i18n-message:save")));
+                .body("data", hasItem("system:role:manage-permissions"));
     }
 
     @Test
@@ -100,7 +97,7 @@ class AuthorizationApiIT extends AdminApiTestSupport {
     }
 
     @Test
-    void roleChangesApplyTheBaselineRbacAndI18nPermissionMatrixImmediately() {
+    void roleChangesApplyTheBaselineRbacPermissionMatrixImmediately() {
         TokenPair manager = loginAsDefaultAdmin();
         String managerAuth = bearer(manager.getAccessToken());
         String limitedAdminId = given()
@@ -118,30 +115,21 @@ class AuthorizationApiIT extends AdminApiTestSupport {
         replaceRoles(managerAuth, limitedAdminId, List.of());
         String limitedAuth = bearer(loginAsLimitedAdmin().getAccessToken());
         assertGetStatus(limitedAuth, "/api/sys/admin/user-info", 200);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/bundle/admin", 200);
         assertPostStatus(limitedAuth, "/api/sys/admin/page", 403);
         assertPostStatus(limitedAuth, "/api/authz/role/list", 403);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/page", 403);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/values/menu.dashboard.title", 403);
 
         replaceRoles(managerAuth, limitedAdminId, List.of("rbac:manager"));
         assertGetStatus(limitedAuth, "/api/sys/admin/user-info", 200);
         assertPostStatus(limitedAuth, "/api/sys/admin/page", 200);
         assertPostStatus(limitedAuth, "/api/authz/role/list", 200);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/values/menu.dashboard.title", 200);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/page", 403);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/remove/menu.dashboard.title", 403);
 
-        replaceRoles(managerAuth, limitedAdminId, List.of("i18n:manager"));
+        replaceRoles(managerAuth, limitedAdminId, List.of());
         assertGetStatus(limitedAuth, "/api/sys/admin/user-info", 200);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/page", 200);
-        assertPostStatus(limitedAuth, "/api/sys/i18n-message/categories", 200);
         assertPostStatus(limitedAuth, "/api/sys/admin/page", 403);
         assertPostStatus(limitedAuth, "/api/authz/role/list", 403);
 
         assertPostStatus(managerAuth, "/api/sys/admin/page", 200);
         assertPostStatus(managerAuth, "/api/authz/role/list", 200);
-        assertPostStatus(managerAuth, "/api/sys/i18n-message/page", 403);
     }
 
     @Test
@@ -163,8 +151,8 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .contentType("application/json;charset=UTF-8")
                 .body("code", equalTo(20002))
                 .body("data", equalTo(null))
-                .body("error", equalTo("The access token is invalid or has expired."))
-                .body("message", equalTo("The access token is invalid or has expired."));
+                .body("error", equalTo("访问令牌无效或已过期。"))
+                .body("message", equalTo("访问令牌无效或已过期。"));
 
         given()
                 .header("Authorization", "Bearer sys_admin.not-a-number.value")
@@ -174,8 +162,8 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .contentType("application/json;charset=UTF-8")
                 .body("code", equalTo(20002))
                 .body("data", equalTo(null))
-                .body("error", equalTo("The access token is invalid or has expired."))
-                .body("message", equalTo("The access token is invalid or has expired."));
+                .body("error", equalTo("访问令牌无效或已过期。"))
+                .body("message", equalTo("访问令牌无效或已过期。"));
 
         given()
                 .header("Authorization", bearer(pair.getAccessToken()) + " trailing")
@@ -185,8 +173,8 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .contentType("application/json;charset=UTF-8")
                 .body("code", equalTo(20002))
                 .body("data", equalTo(null))
-                .body("error", equalTo("The access token is invalid or has expired."))
-                .body("message", equalTo("The access token is invalid or has expired."));
+                .body("error", equalTo("访问令牌无效或已过期。"))
+                .body("message", equalTo("访问令牌无效或已过期。"));
     }
 
     @Test
@@ -250,8 +238,8 @@ class AuthorizationApiIT extends AdminApiTestSupport {
                 .contentType("application/json;charset=UTF-8")
                 .body("code", equalTo(20002))
                 .body("data", equalTo(null))
-                .body("error", equalTo("The access token is invalid or has expired."))
-                .body("message", equalTo("The access token is invalid or has expired."));
+                .body("error", equalTo("访问令牌无效或已过期。"))
+                .body("message", equalTo("访问令牌无效或已过期。"));
     }
 
     private void replaceRoles(String managerAuth, String adminId, List<String> roleCodes) {

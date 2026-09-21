@@ -17,7 +17,6 @@ import com.gnilc.auth.authz.rbac.service.impl.UserRoleServiceImpl;
 import com.gnilc.auth.authz.rbac.support.RbacContainerContextInitializer;
 import com.gnilc.common.config.MyMetaObjectHandler;
 import com.gnilc.common.config.MybatisPlusConfiguration;
-import com.gnilc.common.i18n.I18nMessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -235,9 +234,5 @@ class PermissionCacheTransactionIT {
             return permissionService;
         }
 
-        @Bean
-        I18nMessageService i18nMessageService() {
-            return mock(I18nMessageService.class);
-        }
     }
 }

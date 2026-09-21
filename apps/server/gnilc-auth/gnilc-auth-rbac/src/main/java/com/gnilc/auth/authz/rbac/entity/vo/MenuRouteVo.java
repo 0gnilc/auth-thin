@@ -68,7 +68,7 @@ public class MenuRouteVo {
         private Integer order;
         /** 导航时附带的查询参数对象，由持久化 JSON 文本解析。 */
         private Map<String, Object> query;
-        /** 菜单显示标题，可使用对应的本地化消息键。 */
+        /** 菜单显示标题，直接展示存储的文本。 */
         private String title;
     }
 }

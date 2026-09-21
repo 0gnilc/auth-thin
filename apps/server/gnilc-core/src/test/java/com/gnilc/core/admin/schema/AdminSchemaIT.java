@@ -54,7 +54,10 @@ class AdminSchemaIT {
     @Test
     void freshInstallationGrantsManagementOnceWithoutRestoringRemovedAssignments() {
         initializeApplication();
-        assertThat(defaultAdminRoles()).containsExactlyInAnyOrder("admin", "rbac:manager", "i18n:manager");
+        assertThat(defaultAdminRoles()).containsExactlyInAnyOrder("admin", "rbac:manager");
+        assertThat(jdbc.queryForList("""
+                SELECT title FROM az_menu WHERE name IN ('Dashboard', 'Profile')
+                """, String.class)).containsExactlyInAnyOrder("首页", "个人中心");
         jdbc.update("""
                 UPDATE az_user_role binding
                 JOIN az_role role ON role.id = binding.role_id
@@ -63,12 +66,12 @@ class AdminSchemaIT {
                 WHERE admin.username = 'admin' AND role.code = 'rbac:manager'
                 """);
         initializeApplication();
-        assertThat(defaultAdminRoles()).containsExactlyInAnyOrder("admin", "i18n:manager");
+        assertThat(defaultAdminRoles()).containsExactlyInAnyOrder("admin");
     }
 
     private void initializeApplication() {
         for (String script : java.util.List.of("02_admin.sql", "03_framework_permissions.sql",
-                "04_rbac_permissions.sql", "05_admin_permissions.sql", "06_i18n.sql", "07_rbac_admin.sql")) {
+                "04_rbac_permissions.sql", "05_admin_permissions.sql", "07_rbac_admin.sql")) {
             runScript("sql/schema/" + script);
         }
     }
@@ -305,7 +308,7 @@ class AdminSchemaIT {
 
     @Test
     void rbacAdminSchemaCreatesProtectedManagementResourcesAndCanRunRepeatedly() {
-        runScriptsThroughI18n();
+        runCoreScripts();
         runScript("sql/schema/07_rbac_admin.sql");
 
         assertThat(count("az_role", "code = 'rbac:manager' AND del = 0 AND built_in = 1"))
@@ -333,20 +336,7 @@ class AdminSchemaIT {
                    AND r.del = 0
                    AND rp.del = 0
                    AND p.del = 0
-                """, Integer.class)).isEqualTo(27);
-        assertThat(jdbc.queryForObject("""
-                SELECT COUNT(*)
-                  FROM az_role_permission rp
-                  JOIN az_role r ON r.id = rp.role_id
-                  JOIN az_permission p ON p.id = rp.permission_id
-                 WHERE r.code = 'rbac:manager'
-                   AND r.del = 0
-                   AND rp.del = 0
-                   AND p.del = 0
-                   AND p.code IN (
-                       'POST:/sys/i18n-message/values/{messageKey}',
-                       'POST:/sys/i18n-message/save')
-                """, Integer.class)).isEqualTo(2);
+                """, Integer.class)).isEqualTo(25);
         assertThat(jdbc.queryForObject("""
                 SELECT COUNT(*)
                   FROM az_menu
@@ -362,7 +352,7 @@ class AdminSchemaIT {
                    AND access_code IS NOT NULL
                    AND del = 0
                    AND built_in = 1
-                """, Integer.class)).isEqualTo(17);
+                """, Integer.class)).isEqualTo(15);
         assertThat(jdbc.queryForList("""
                 SELECT CONCAT(name, ':', access_code)
                   FROM az_menu
@@ -409,52 +399,23 @@ class AdminSchemaIT {
                    AND r.del = 0
                    AND ur.del = 0
                 """, Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForList("""
+                SELECT title FROM az_menu
+                 WHERE name IN ('Admin', 'Role', 'Permission', 'Menu')
+                """, String.class)).containsExactlyInAnyOrder("后台管理员", "角色管理", "权限管理", "菜单管理");
         assertThat(jdbc.queryForObject("""
-                SELECT COUNT(*)
-                  FROM sys_i18n
-                 WHERE category = 'admin'
-                   AND message_key IN (
-                       'menu.system.admin.title',
-                       'menu.system.role.title',
-                       'menu.system.permission.title',
-                       'menu.system.menu.title')
-                """, Integer.class)).isEqualTo(8);
-
-        jdbc.update("""
-                UPDATE sys_i18n
-                   SET category = 'default',
-                       i18n_value = CASE
-                           WHEN locale = 'en-US' THEN 'Operator managed'
-                           ELSE i18n_value
-                       END
-                 WHERE message_key = 'menu.system.admin.title'
-                """);
-        jdbc.update("""
-                DELETE FROM sys_i18n
-                 WHERE message_key = 'menu.system.admin.title'
-                   AND locale = 'zh-CN'
-                """);
+                SELECT COUNT(*) FROM information_schema.tables
+                 WHERE table_schema = database() AND table_name = 'sys_i18n'
+                """, Integer.class)).isZero();
         runScript("sql/schema/07_rbac_admin.sql");
-
         assertThat(count("az_role", "code = 'rbac:manager' AND del = 0")).isEqualTo(1);
-        assertThat(jdbc.queryForObject("""
-                SELECT i18n_value
-                  FROM sys_i18n
-                WHERE category = 'default'
-                   AND message_key = 'menu.system.admin.title'
-                   AND locale = 'en-US'
-                """, String.class)).isEqualTo("Operator managed");
-        assertThat(jdbc.queryForObject("""
-                SELECT COUNT(*)
-                  FROM sys_i18n
-                 WHERE category = 'default'
-                   AND message_key = 'menu.system.admin.title'
-                """, Integer.class)).isEqualTo(2);
+        assertThat(count("az_menu", "name = 'System' AND del = 0 AND title = '系统管理'")).isEqualTo(1);
+
     }
 
     @Test
     void rbacAdminSchemaMigratesLegacyManagerRoleCodeWithoutChangingIdentity() {
-        runScriptsThroughI18n();
+        runCoreScripts();
         jdbc.update("""
                 INSERT INTO az_role (
                     del, create_time, update_time, code, name, remark, built_in)
@@ -478,7 +439,7 @@ class AdminSchemaIT {
     void rbacAdminSchemaAddsBuiltInColumnsToPreviousSchema() {
         jdbc.execute("ALTER TABLE az_permission DROP COLUMN built_in");
         jdbc.execute("ALTER TABLE az_menu DROP COLUMN built_in");
-        runScriptsThroughI18n();
+        runCoreScripts();
 
         runScript("sql/schema/07_rbac_admin.sql");
 
@@ -490,7 +451,7 @@ class AdminSchemaIT {
 
     @Test
     void rbacAdminSchemaMigratesAssignmentSaveRoutesWithoutLosingGrants() {
-        runScriptsThroughI18n();
+        runCoreScripts();
         jdbc.update("""
                 UPDATE az_permission
                    SET name = CASE code
@@ -568,12 +529,11 @@ class AdminSchemaIT {
                 """, String.class, table);
     }
 
-    private void runScriptsThroughI18n() {
+    private void runCoreScripts() {
         runScript("sql/schema/02_admin.sql");
         runScript("sql/schema/03_framework_permissions.sql");
         runScript("sql/schema/04_rbac_permissions.sql");
         runScript("sql/schema/05_admin_permissions.sql");
-        runScript("sql/schema/06_i18n.sql");
     }
 
     private int count(String table, String where) {

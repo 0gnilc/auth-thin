@@ -27,7 +27,6 @@ import {
 
 import { usePriorityValues } from '@vben/hooks';
 import { EmptyIcon } from '@vben/icons';
-import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 import {
   cloneDeep,
@@ -146,7 +145,7 @@ const [Form, formApi] = useTableForm({
   },
   showCollapseButton: true,
   submitButtonOptions: {
-    content: computed(() => $t('common.search')),
+    content: computed(() => '搜索'),
   },
   wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
 });
@@ -171,9 +170,7 @@ const toolbarOptions = computed(() => {
     icon: 'vxe-icon-search',
     circle: true,
     status: showSearchForm.value ? 'primary' : undefined,
-    title: showSearchForm.value
-      ? $t('common.hideSearchPanel')
-      : $t('common.showSearchPanel'),
+    title: showSearchForm.value ? '隐藏搜索面板' : '显示搜索面板',
   };
   // 将搜索按钮合并到用户配置的toolbarConfig.tools中
   const toolbarConfig: VxeGridPropTypes.ToolbarConfig = {
@@ -438,7 +435,7 @@ onUnmounted(() => {
           class="ml-2"
           v-if="gridOptions?.toolbarConfig?.search && !!formOptions"
           :status="showSearchForm ? 'primary' : undefined"
-          :title="$t('common.search')"
+          title="搜索"
           @click="onSearchBtnClick"
         />
       </template>
@@ -506,7 +503,7 @@ onUnmounted(() => {
       <template v-if="showDefaultEmpty" #empty>
         <slot name="empty">
           <EmptyIcon class="mx-auto" />
-          <div class="mt-2">{{ $t('common.noData') }}</div>
+          <div class="mt-2">暂无数据</div>
         </slot>
       </template>
     </VxeGrid>

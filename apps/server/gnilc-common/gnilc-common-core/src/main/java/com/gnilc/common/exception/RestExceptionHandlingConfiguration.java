@@ -1,17 +1,13 @@
 package com.gnilc.common.exception;
 
 import com.gnilc.common.constant.ResponseCode;
-import com.gnilc.common.i18n.I18nMessageService;
-import com.gnilc.common.i18n.SupportedLocale;
 import com.gnilc.common.utils.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -24,47 +20,30 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 由应用显式导入的 REST 异常出口与请求语言配置。
+ * 由应用显式导入的 REST 异常出口。
  *
  * <p>业务错误使用 R.code，HTTP 状态由具体异常分支决定；二者不互相替代。</p>
  */
-@Import(I18nMessageService.class)
 public class RestExceptionHandlingConfiguration {
 
     @Bean
-    public LocaleResolver localeResolver(
-            @Value("${app.i18n.default-locale:en-US}") String defaultLocale) {
-        AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
-        resolver.setSupportedLocales(SupportedLocale.locales());
-        resolver.setDefaultLocale(SupportedLocale.fromLanguageTagOrDefault(defaultLocale));
-        return resolver;
+    RestExceptionControllerAdvice restExceptionControllerAdvice() {
+        return new RestExceptionControllerAdvice();
     }
 
-    @Bean
-    RestExceptionControllerAdvice restExceptionControllerAdvice(I18nMessageService i18nMessageService) {
-        return new RestExceptionControllerAdvice(i18nMessageService);
-    }
-
-    /** 保留已知错误的业务文案；对未预期异常记录诊断原因并向调用方返回通用本地化提示。 */
+    /** 保留已知错误的业务文案；对未预期异常记录诊断原因并向调用方返回通用中文提示。 */
     @RestControllerAdvice
     @Order(Ordered.LOWEST_PRECEDENCE)
     @Conditional(ExplicitImportOnlyCondition.class)
     public static final class RestExceptionControllerAdvice {
 
         private final Logger log = LoggerFactory.getLogger(RestExceptionControllerAdvice.class);
-        private final I18nMessageService i18nMessageService;
-
-        public RestExceptionControllerAdvice(I18nMessageService i18nMessageService) {
-            this.i18nMessageService = i18nMessageService;
-        }
 
         /** 返回字段错误集合；该校验日志只记录字段与约束码，不输出用户提交的被拒绝值。 */
         @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -80,7 +59,7 @@ public class RestExceptionHandlingConfiguration {
                     .map(FieldError::getMessage)
                     .filter(value -> value != null && !value.isBlank())
                     .findFirst()
-                    .orElse(i18nMessageService.get("validation.argument.invalid"));
+                    .orElse("请求参数无效。");
             String diagnostics = fieldErrors.stream()
                     .map(error -> error.getField() + ":"
                             + (error.getCode() == null
@@ -95,7 +74,7 @@ public class RestExceptionHandlingConfiguration {
             log.warn("Request body could not be read: {}", exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(R.error(ResponseCode.ARGUMENT_INVALID,
-                            i18nMessageService.get("validation.body.malformed")));
+                            "请求体格式错误。"));
         }
 
         @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -103,7 +82,7 @@ public class RestExceptionHandlingConfiguration {
             log.warn("Request parameter has an invalid format: {}", exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(R.error(ResponseCode.ARGUMENT_INVALID,
-                            i18nMessageService.get("validation.parameter.format.invalid")));
+                            "请求参数格式错误。"));
         }
 
         @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -111,7 +90,7 @@ public class RestExceptionHandlingConfiguration {
             log.warn("Request content type is not supported: {}", exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(R.error(ResponseCode.ARGUMENT_INVALID,
-                            i18nMessageService.get("validation.media.type.unsupported")));
+                            "不支持该请求内容类型。"));
         }
 
         @ExceptionHandler(InvalidArgumentException.class)
@@ -161,7 +140,7 @@ public class RestExceptionHandlingConfiguration {
             log.error("Unhandled exception", exception);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(R.error(ResponseCode.ERROR,
-                            i18nMessageService.get("common.unexpected.error")));
+                            "系统发生未知错误。"));
         }
     }
 

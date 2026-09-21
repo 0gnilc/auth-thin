@@ -5,11 +5,6 @@ server:
 spring:
   application:
     name: gnilc-auth
-  messages:
-    basename: i18n/common/messages,i18n/rbac/messages,i18n/system/messages
-    encoding: UTF-8
-    fallback-to-system-locale: false
-    use-code-as-default-message: false
   profiles:
     active: dev
   datasource:
@@ -54,6 +49,3 @@ logging:
   level:
     root: warn
     com.gnilc: info
-app:
-  i18n:
-    default-locale: en-US

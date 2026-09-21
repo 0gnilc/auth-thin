@@ -3,8 +3,6 @@ import type { PreferencesButtonPositionType, SelectOption } from '@vben/types';
 
 import { computed } from 'vue';
 
-import { $t } from '@vben/locales';
-
 import DraggableList from '../draggable-list.vue';
 
 defineOptions({
@@ -18,9 +16,6 @@ const widgetGlobalSearchButtonPosition = defineModel<string>(
 );
 const widgetFullscreenButtonPosition = defineModel<string>(
   'widgetFullscreenButtonPosition',
-);
-const widgetLanguageToggleButtonPosition = defineModel<string>(
-  'widgetLanguageToggleButtonPosition',
 );
 const widgetNotificationButtonPosition = defineModel<string>(
   'widgetNotificationButtonPosition',
@@ -46,15 +41,15 @@ const appPreferencesButtonPosition = defineModel<PreferencesButtonPositionType>(
 
 const buttonPositionItems = computed((): SelectOption[] => [
   {
-    label: $t('preferences.widget.header'),
+    label: '顶栏',
     value: 'header',
   },
   {
-    label: $t('preferences.widget.userDropdown'),
+    label: '用户下拉窗',
     value: 'user-dropdown',
   },
   {
-    label: $t('common.notShow'),
+    label: '不显示',
     value: 'none',
   },
 ]);
@@ -66,23 +61,23 @@ const buttonPositionItems = computed((): SelectOption[] => [
  */
 const preferencesPositionItems = computed((): SelectOption[] => [
   {
-    label: $t('preferences.position.auto'),
+    label: '自动',
     value: 'auto',
   },
   {
-    label: $t('preferences.position.header'),
+    label: '顶栏',
     value: 'header',
   },
   {
-    label: $t('preferences.position.fixed'),
+    label: '固定',
     value: 'fixed',
   },
   {
-    label: $t('preferences.position.userDropdown'),
+    label: '用户下拉窗',
     value: 'user-dropdown',
   },
   {
-    label: $t('common.notShow'),
+    label: '不显示',
     value: 'none',
   },
 ]);
@@ -91,7 +86,6 @@ const positionMap: Record<string, string> = {
   globalSearch: 'widgetGlobalSearchButtonPosition',
   preferences: 'appPreferencesButtonPosition',
   themeToggle: 'widgetThemeToggleButtonPosition',
-  languageToggle: 'widgetLanguageToggleButtonPosition',
   timezone: 'widgetTimezoneButtonPosition',
   fullscreen: 'widgetFullscreenButtonPosition',
   refresh: 'widgetRefreshButtonPosition',
@@ -101,22 +95,21 @@ const positionMap: Record<string, string> = {
 };
 
 const labelMap: Record<string, string> = {
-  globalSearch: 'preferences.widget.globalSearch',
-  preferences: 'preferences.title',
-  themeToggle: 'preferences.widget.themeToggle',
-  languageToggle: 'preferences.widget.languageToggle',
-  timezone: 'preferences.widget.timezone',
-  fullscreen: 'preferences.widget.fullscreen',
-  refresh: 'preferences.widget.refresh',
-  notification: 'preferences.widget.notification',
-  lockScreenBtn: 'ui.widgets.lockScreen.title',
-  logoutBtn: 'common.logout',
+  globalSearch: '全局搜索',
+  preferences: '偏好设置',
+  themeToggle: '主题切换',
+  timezone: '时区',
+  fullscreen: '全屏',
+  refresh: '刷新',
+  notification: '通知',
+  lockScreenBtn: '锁定屏幕',
+  logoutBtn: '退出登录',
 };
 
 const draggableItems = computed(() =>
   (widgetOrder.value ?? []).map((key) => ({
     key,
-    label: $t(labelMap[key] ?? key),
+    label: labelMap[key] ?? key,
     position: getPosition(key),
     positionItems:
       key === 'preferences' ? preferencesPositionItems.value : undefined,
@@ -131,7 +124,6 @@ function getPosition(
   const modelMap: Record<string, any> = {
     widgetGlobalSearchButtonPosition,
     widgetFullscreenButtonPosition,
-    widgetLanguageToggleButtonPosition,
     widgetNotificationButtonPosition,
     widgetThemeToggleButtonPosition,
     widgetLockScreenButtonPosition,
@@ -156,7 +148,6 @@ function handleUpdatePosition(
   const modelMap: Record<string, any> = {
     widgetGlobalSearchButtonPosition,
     widgetFullscreenButtonPosition,
-    widgetLanguageToggleButtonPosition,
     widgetNotificationButtonPosition,
     widgetThemeToggleButtonPosition,
     widgetLockScreenButtonPosition,

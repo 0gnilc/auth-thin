@@ -1,7 +1,5 @@
 import { ElMessageBox } from 'element-plus';
 
-import { $t } from '#/locales';
-
 export async function confirmDiscardChanges(
   hasUnsavedChanges: boolean,
   options?: {
@@ -13,13 +11,11 @@ export async function confirmDiscardChanges(
 
   try {
     await ElMessageBox.confirm(
-      $t('unsavedChanges.message'),
-      $t('unsavedChanges.title'),
+      '当前内容尚未保存，确定放弃修改吗？',
+      '未保存的修改',
       {
-        cancelButtonText:
-          options?.cancelButtonText ?? $t('unsavedChanges.keepEditing'),
-        confirmButtonText:
-          options?.confirmButtonText ?? $t('unsavedChanges.discard'),
+        cancelButtonText: options?.cancelButtonText ?? '继续编辑',
+        confirmButtonText: options?.confirmButtonText ?? '放弃修改',
         type: 'warning',
       },
     );

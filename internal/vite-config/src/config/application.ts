@@ -33,7 +33,6 @@ function defineApplicationConfig(userConfigPromise?: DefineApplicationOptions) {
       env,
       extraAppConfig: true,
       html: true,
-      i18n: true,
       importmapOptions: defaultImportmapOptions,
       injectAppLoading: true,
       injectMetadata: true,

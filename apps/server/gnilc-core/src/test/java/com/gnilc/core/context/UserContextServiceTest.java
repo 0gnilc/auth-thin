@@ -2,10 +2,8 @@ package com.gnilc.core.context;
 
 import com.gnilc.auth.authn.context.DefaultAccessPrincipal;
 import com.gnilc.common.exception.InvalidArgumentException;
-import com.gnilc.common.i18n.I18nMessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** 从受信任 Servlet 主体读取 RBAC 用户 ID，区分必需身份与允许匿名的读取入口。 */
 class UserContextServiceTest {
-    private final UserContextService userContextService = new UserContextService(messages());
+    private final UserContextService userContextService = new UserContextService();
 
     @AfterEach
     void clearRequestContext() {
@@ -35,7 +33,7 @@ class UserContextServiceTest {
     void rejectsAnUnauthenticatedRequest() {
         assertThatThrownBy(userContextService::getUserId)
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
     }
 
     @Test
@@ -43,10 +41,4 @@ class UserContextServiceTest {
         assertThat(userContextService.findUserId()).isNull();
     }
 
-    private static I18nMessageService messages() {
-        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
-        source.setBasename("i18n/system/messages");
-        source.setDefaultEncoding("UTF-8");
-        return new I18nMessageService(source, "en-US");
-    }
 }

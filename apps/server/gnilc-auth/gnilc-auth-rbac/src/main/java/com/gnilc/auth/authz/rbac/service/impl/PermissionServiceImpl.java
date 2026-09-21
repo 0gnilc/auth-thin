@@ -2,7 +2,6 @@ package com.gnilc.auth.authz.rbac.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gnilc.common.base.Preconditions;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.auth.authz.rbac.dao.PermissionDao;
 import com.gnilc.auth.authz.rbac.entity.bo.PermissionBo;
 import com.gnilc.auth.authz.rbac.entity.dto.PermissionDto;
@@ -28,16 +27,13 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionDao, Permission
     private final ApplicationEventPublisher eventPublisher;
     private final UserRoleService userRoleService;
     private final RolePermissionService rolePermissionService;
-    private final I18nMessageService messages;
 
     public PermissionServiceImpl(ApplicationEventPublisher eventPublisher,
                                  UserRoleService userRoleService,
-                                 RolePermissionService rolePermissionService,
-                                 I18nMessageService messages) {
+                                 RolePermissionService rolePermissionService) {
         this.eventPublisher = eventPublisher;
         this.userRoleService = userRoleService;
         this.rolePermissionService = rolePermissionService;
-        this.messages = messages;
     }
 
     @Transactional
@@ -65,7 +61,6 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionDao, Permission
                 AuthorizationEvent.Action.CREATE,
                 bo.getId()));
     }
-
 
     @Transactional
     @Override
@@ -95,11 +90,11 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionDao, Permission
     @Transactional
     @Override
     public void removePermission(Long id) {
-        Preconditions.checkArgument(id != null, messages.get("rbac.permission.selection.required"));
+        Preconditions.checkArgument(id != null, "请选择权限。");
         PermissionBo bo = getById(id);
-        Preconditions.checkCondition(bo != null, messages.get("rbac.permission.notFound"));
+        Preconditions.checkCondition(bo != null, "权限已不存在，请刷新后重试。");
         Preconditions.checkCondition(!Boolean.TRUE.equals(bo.getBuiltIn()),
-                messages.get("rbac.permission.builtIn.delete"));
+                "内置权限不能删除。");
         bo.setCode(bo.getCode() + "_del_" + id);
         updateById(bo);
         rolePermissionService.removeByPermissionId(id);
@@ -166,39 +161,39 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionDao, Permission
     }
 
     private PermissionBo validatePermission(PermissionDto dto, boolean update) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.permission.information.required"));
+        Preconditions.checkArgument(dto != null, "权限信息不能为空。");
         PermissionBo permission = null;
         if (update) {
             Preconditions.checkArgument(dto.getId() != null,
-                    messages.get("rbac.permission.selection.required"));
+                    "请选择权限。");
             permission = getById(dto.getId());
-            Preconditions.checkCondition(permission != null, messages.get("rbac.permission.notFound"));
+            Preconditions.checkCondition(permission != null, "权限已不存在，请刷新后重试。");
             Preconditions.checkCondition(!Boolean.TRUE.equals(permission.getBuiltIn()),
-                    messages.get("rbac.permission.builtIn.modify"));
+                    "内置权限不能修改。");
         }
         String code = dto.getCode();
         String name = dto.getName();
         String targetIdentifier = dto.getTargetIdentifier();
         String targetQualifier = dto.getTargetQualifier();
         String remark = dto.getRemark();
-        Preconditions.checkArgument(StringUtils.isNotBlank(name), messages.get("rbac.permission.name.required"));
-        Preconditions.checkArgument(StringUtils.isNotBlank(code), messages.get("rbac.permission.code.required"));
+        Preconditions.checkArgument(StringUtils.isNotBlank(name), "权限名称不能为空。");
+        Preconditions.checkArgument(StringUtils.isNotBlank(code), "权限编码不能为空。");
         Preconditions.checkArgument(StringUtils.isNotBlank(targetIdentifier),
-                messages.get("rbac.permission.targetIdentifier.required"));
+                "访问目标标识不能为空。");
         Preconditions.checkArgument(code.codePointCount(0, code.length()) <= 255,
-                messages.get("rbac.permission.code.tooLong", 255));
+                "权限编码不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(name.codePointCount(0, name.length()) <= 255,
-                messages.get("rbac.permission.name.tooLong", 255));
+                "权限名称不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(targetIdentifier.codePointCount(0, targetIdentifier.length()) <= 500,
-                messages.get("rbac.permission.targetIdentifier.tooLong", 500));
+                "访问目标标识不能超过 %s 个字符。".formatted(500));
         Preconditions.checkArgument(targetQualifier == null
                         || targetQualifier.codePointCount(0, targetQualifier.length()) <= 100,
-                messages.get("rbac.permission.targetQualifier.tooLong", 100));
+                "目标限定符不能超过 %s 个字符。".formatted(100));
         Preconditions.checkArgument(remark == null || remark.codePointCount(0, remark.length()) <= 500,
-                messages.get("rbac.permission.remark.tooLong", 500));
+                "权限描述不能超过 %s 个字符。".formatted(500));
         if (!update || !code.equals(permission.getCode())) {
             Preconditions.checkArgument(getPermissionByCode(code) == null,
-                    messages.get("rbac.permission.code.exists"));
+                    "已存在使用该编码的权限。");
         }
         return permission;
     }

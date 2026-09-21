@@ -2,10 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { useColumns } from '../data';
 
-vi.mock('#/locales', () => ({
-  $t: (key: string) => key,
-}));
-
 function statusColumn(columns: ReturnType<typeof useColumns>) {
   const column = columns?.find((candidate) => candidate?.field === 'status');
   if (!column) throw new Error('Status column not found');

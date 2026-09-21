@@ -1,6 +1,7 @@
 {
   "name": "@app/admin",
   "version": "1.0.0-rc.1",
+  "private": true,
   "homepage": "https://github.com/0gnilc/auth",
   "bugs": "https://github.com/0gnilc/auth/issues",
   "repository": {
@@ -31,7 +32,6 @@
     "@vben/hooks": "workspace:*",
     "@vben/icons": "workspace:*",
     "@vben/layouts": "workspace:*",
-    "@vben/locales": "workspace:*",
     "@vben/plugins": "workspace:*",
     "@vben/preferences": "workspace:*",
     "@vben/request": "workspace:*",
@@ -49,6 +49,5 @@
   "devDependencies": {
     "@vue/test-utils": "catalog:",
     "unplugin-element-plus": "catalog:"
-  },
-  "private": true
+  }
 }

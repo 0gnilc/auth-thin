@@ -1,6 +1,5 @@
 package com.gnilc.common.exception;
 
-import com.gnilc.common.i18n.I18nMessageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** 通过 MockMvc 验证异常出口的 HTTP 状态、业务 code、本地化文案及校验诊断。 */
+/** 通过 MockMvc 验证异常出口的 HTTP 状态、业务 code、中文文案及校验诊断。 */
 @ExtendWith(OutputCaptureExtension.class)
 class RestExceptionControllerAdviceControllerTest {
 
@@ -43,15 +41,10 @@ class RestExceptionControllerAdviceControllerTest {
 
     @BeforeEach
     void setUp() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("i18n/common/messages");
-        messageSource.setDefaultEncoding("UTF-8");
-        I18nMessageService messages = new I18nMessageService(messageSource, "zh-CN");
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
-        validator.setValidationMessageSource(messageSource);
         validator.afterPropertiesSet();
         mvc = MockMvcBuilders.standaloneSetup(new ThrowingController())
-                .setControllerAdvice(new RestExceptionHandlingConfiguration.RestExceptionControllerAdvice(messages))
+                .setControllerAdvice(new RestExceptionHandlingConfiguration.RestExceptionControllerAdvice())
                 .setMessageConverters(new MappingJackson2HttpMessageConverter())
                 .setValidator(validator)
                 .build();
@@ -75,30 +68,30 @@ class RestExceptionControllerAdviceControllerTest {
         mvc.perform(get("/test/authentication"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(20001))
-                .andExpect(jsonPath("$.error").value("Incorrect username or password."));
+                .andExpect(jsonPath("$.error").value("用户名或密码错误。"));
 
         mvc.perform(get("/test/unauthorized"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(20002))
-                .andExpect(jsonPath("$.error").value("Unauthorized."));
+                .andExpect(jsonPath("$.error").value("未认证。"));
     }
 
     @Test
-    void malformedRequestsReturnProfessionalEnglishMessages() throws Exception {
+    void malformedRequestsReturnChineseMessages() throws Exception {
         mvc.perform(post("/test/body")
                         .header(ACCEPT_LANGUAGE, "en-US")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(10001))
-                .andExpect(jsonPath("$.error").value("The request body is malformed."));
+                .andExpect(jsonPath("$.error").value("请求体格式错误。"));
 
         mvc.perform(get("/test/number")
                         .header(ACCEPT_LANGUAGE, "en-US")
                         .param("value", "not-a-number"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(10001))
-                .andExpect(jsonPath("$.error").value("A request parameter has an invalid format."));
+                .andExpect(jsonPath("$.error").value("请求参数格式错误。"));
     }
 
     @Test
@@ -119,7 +112,7 @@ class RestExceptionControllerAdviceControllerTest {
                         .content("body"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(10001))
-                .andExpect(jsonPath("$.error").value("The request content type is not supported."));
+                .andExpect(jsonPath("$.error").value("不支持该请求内容类型。"));
     }
 
     @Test
@@ -149,7 +142,7 @@ class RestExceptionControllerAdviceControllerTest {
         mvc.perform(get("/test/runtime").header(ACCEPT_LANGUAGE, "en-US"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value(10000))
-                .andExpect(jsonPath("$.error").value("An unexpected error occurred."));
+                .andExpect(jsonPath("$.error").value("系统发生未知错误。"));
     }
 
     @Test
@@ -160,7 +153,7 @@ class RestExceptionControllerAdviceControllerTest {
     }
 
     @Test
-    void unsupportedRequestLocaleFallsBackToChinese() throws Exception {
+    void clientLanguageDoesNotChangeChineseMessages() throws Exception {
         mvc.perform(post("/test/body")
                         .header(ACCEPT_LANGUAGE, "fr-FR")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -184,12 +177,12 @@ class RestExceptionControllerAdviceControllerTest {
 
         @GetMapping("/test/authentication")
         void authentication() {
-            throw new AuthenticationFailedException("Incorrect username or password.");
+            throw new AuthenticationFailedException("用户名或密码错误。");
         }
 
         @GetMapping("/test/unauthorized")
         void unauthorized() {
-            throw new UnauthorizedException("Unauthorized.");
+            throw new UnauthorizedException("未认证。");
         }
 
         @GetMapping("/test/runtime")

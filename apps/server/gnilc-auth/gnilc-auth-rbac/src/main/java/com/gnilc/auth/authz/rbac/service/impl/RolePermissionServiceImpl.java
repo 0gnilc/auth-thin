@@ -2,7 +2,6 @@ package com.gnilc.auth.authz.rbac.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gnilc.common.base.Preconditions;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.auth.authz.rbac.dao.RolePermissionDao;
 import com.gnilc.auth.authz.rbac.entity.bo.RoleBo;
 import com.gnilc.auth.authz.rbac.entity.bo.PermissionBo;
@@ -24,7 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 /** 校验权限选择后替换角色权限集合，内置角色的固定授权不允许修改。 */
 @Service("rolePermissionService")
 public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionDao, RolePermissionBo>
@@ -33,21 +31,18 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionDao, Ro
     private final ApplicationEventPublisher eventPublisher;
     private final PermissionService permissionService;
     private final RoleService roleService;
-    private final I18nMessageService messages;
 
     public RolePermissionServiceImpl(ApplicationEventPublisher eventPublisher,
                                      @Lazy PermissionService permissionService,
-                                     RoleService roleService,
-                                     I18nMessageService messages) {
+                                     RoleService roleService) {
         this.eventPublisher = eventPublisher;
         this.permissionService = permissionService;
         this.roleService = roleService;
-        this.messages = messages;
     }
 
     @Override
     public List<Long> getPermissionIds(Long roleId) {
-        Preconditions.checkArgument(roleId != null, messages.get("rbac.role.selection.required"));
+        Preconditions.checkArgument(roleId != null, "请选择角色。");
         return lambdaQuery()
                 .select(RolePermissionBo::getPermissionId)
                 .eq(RolePermissionBo::getRoleId, roleId)
@@ -77,23 +72,23 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionDao, Ro
     @Transactional
     @Override
     public void saveRolePermissions(RolePermissionDto dto) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.assignment.rolePermission.required"));
+        Preconditions.checkArgument(dto != null, "角色权限分配信息不能为空。");
         Long roleId = dto.getRoleId();
         List<Long> permissionIds = dto.getPermissionIds();
-        Preconditions.checkArgument(roleId != null, messages.get("rbac.role.selection.required"));
+        Preconditions.checkArgument(roleId != null, "请选择角色。");
         RoleBo role = roleService.getById(roleId);
-        Preconditions.checkCondition(role != null, messages.get("rbac.role.notFound"));
+        Preconditions.checkCondition(role != null, "角色已不存在，请刷新后重试。");
         Preconditions.checkCondition(!Boolean.TRUE.equals(role.getBuiltIn()),
-                messages.get("rbac.role.builtIn.assignments"));
+                "内置角色的权限和菜单不能修改。");
 
         Preconditions.checkArgument(CollectionUtils.isEmpty(permissionIds)
                         || permissionIds.stream().noneMatch(Objects::isNull),
-                messages.get("rbac.permission.selection.required"));
+                "请选择权限。");
         Set<Long> newSet = CollectionUtils.isEmpty(permissionIds) ? Set.of() : Sets.newHashSet(permissionIds);
         if (!newSet.isEmpty()) {
             List<PermissionBo> selectedPermissions = permissionService.getPermissions(newSet.stream().toList());
             Preconditions.checkCondition(selectedPermissions.size() == newSet.size(),
-                    messages.get("rbac.permission.notFound"));
+                    "权限已不存在，请刷新后重试。");
         }
 
         Set<Long> oldSet = lambdaQuery()

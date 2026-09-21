@@ -2,7 +2,6 @@
 import { computed, reactive, ref } from 'vue';
 
 import { LockKeyhole } from '@vben/icons';
-import { $t, useI18n } from '@vben/locales';
 import { storeToRefs, useAccessStore } from '@vben/stores';
 
 import { useScrollLock } from '@vben-core/composables';
@@ -25,14 +24,13 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{ toLogin: [] }>();
 
-const { locale } = useI18n();
 const accessStore = useAccessStore();
 
 const now = useNow();
 const meridiem = useDateFormat(now, 'A');
 const hour = useDateFormat(now, 'HH');
 const minute = useDateFormat(now, 'mm');
-const date = useDateFormat(now, 'YYYY-MM-DD dddd', { locales: locale.value });
+const date = useDateFormat(now, 'YYYY-MM-DD dddd', { locales: 'zh-CN' });
 
 const showUnlockForm = ref(false);
 const { lockScreenPassword } = storeToRefs(accessStore);
@@ -48,13 +46,11 @@ const [Form, { getFieldComponentRef, getRawValues, setFieldError, validate }] =
         {
           component: 'VbenInputPassword' as const,
           componentProps: {
-            placeholder: $t('ui.widgets.lockScreen.placeholder'),
+            placeholder: '请输入锁屏密码',
           },
           fieldName: 'password',
-          label: $t('authentication.password'),
-          rules: z
-            .string()
-            .min(1, { message: $t('authentication.passwordTip') }),
+          label: '密码',
+          rules: z.string().min(1, { message: '请输入密码' }),
         },
       ]),
       showDefaultActions: false,
@@ -68,7 +64,7 @@ async function handleSubmit() {
     if (lockScreenPassword?.value === password) {
       accessStore.unlockScreen();
     } else {
-      await setFieldError('password', $t('authentication.passwordErrorTip'));
+      await setFieldError('password', '密码错误');
     }
   }
 }
@@ -98,7 +94,7 @@ useScrollLock();
           <LockKeyhole
             class="size-5 transition-all duration-300 group-hover:scale-125"
           />
-          <span>{{ $t('ui.widgets.lockScreen.unlock') }}</span>
+          <span>点击解锁</span>
         </div>
         <div class="flex-center size-full">
           <div class="flex w-full justify-center gap-4 px-4 sm:gap-6 md:gap-8">
@@ -134,21 +130,21 @@ useScrollLock();
             <Form />
           </div>
           <VbenButton class="enter-x w-full" @click="handleSubmit">
-            {{ $t('ui.widgets.lockScreen.entry') }}
+            进入系统
           </VbenButton>
           <VbenButton
             class="enter-x my-2 w-full"
             variant="ghost"
             @click="$emit('toLogin')"
           >
-            {{ $t('ui.widgets.lockScreen.backToLogin') }}
+            返回登录
           </VbenButton>
           <VbenButton
             class="enter-x mr-2 w-full"
             variant="ghost"
             @click="toggleUnlockForm"
           >
-            {{ $t('common.back') }}
+            返回
           </VbenButton>
         </div>
       </div>

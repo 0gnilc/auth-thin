@@ -9,7 +9,6 @@ import { ElMessage, ElTag } from 'element-plus';
 
 import { useVbenVxeGrid, VbenTableAction } from '#/adapter/vxe-table';
 import { getPermissionList, removePermission } from '#/api/system';
-import { $t } from '#/locales';
 
 import Form from './components/form.vue';
 import { useColumns, useGridFormSchema } from './data';
@@ -58,7 +57,7 @@ function onEdit(row: PermissionApi.Permission) {
 async function onDelete(row: PermissionApi.Permission) {
   if (row.builtIn) return;
   await removePermission(row.id);
-  ElMessage.success($t('systemPermission.messages.removeSuccess'));
+  ElMessage.success('权限已删除');
   await gridApi.query();
 }
 
@@ -70,7 +69,7 @@ function refresh() {
 <template>
   <Page auto-content-height>
     <FormDrawer @success="refresh" />
-    <Grid :table-title="$t('systemPermission.title')">
+    <Grid table-title="权限管理">
       <template #toolbar-tools>
         <VbenButton
           v-access:code="'system:permission:create'"
@@ -78,23 +77,19 @@ function refresh() {
           @click="onCreate"
         >
           <IconifyIcon icon="lucide:plus" class="mr-2 size-4" />
-          {{ $t('systemPermission.actions.create') }}
+          新增权限
         </VbenButton>
       </template>
 
       <template #access="{ row }">
         <ElTag :type="row.publicAccess ? 'success' : 'info'" effect="plain">
-          {{
-            row.publicAccess
-              ? $t('systemPermission.public')
-              : $t('systemPermission.protected')
-          }}
+          {{ row.publicAccess ? '公开访问' : '需要授权' }}
         </ElTag>
       </template>
 
       <template #type="{ row }">
         <ElTag :type="row.builtIn ? 'warning' : 'info'" effect="plain">
-          {{ row.builtIn ? $t('rbacCommon.builtIn') : $t('rbacCommon.custom') }}
+          {{ row.builtIn ? '内置' : '自定义' }}
         </ElTag>
       </template>
 
@@ -104,10 +99,8 @@ function refresh() {
             {
               auth: 'system:permission:update',
               disabled: row.builtIn,
-              text: $t('rbacCommon.edit'),
-              tooltip: row.builtIn
-                ? $t('rbacCommon.builtInProtected')
-                : undefined,
+              text: '修改',
+              tooltip: row.builtIn ? '内置资源不可修改' : undefined,
               onClick: () => onEdit(row),
             },
           ]"
@@ -116,11 +109,9 @@ function refresh() {
               auth: 'system:permission:remove',
               danger: true,
               disabled: row.builtIn,
-              text: $t('rbacCommon.remove'),
+              text: '删除',
               popConfirm: {
-                title: $t('systemPermission.messages.removeConfirm', {
-                  name: row.name,
-                }),
+                title: `确定删除权限“${row.name}”吗？`,
                 confirm: () => onDelete(row),
               },
             },

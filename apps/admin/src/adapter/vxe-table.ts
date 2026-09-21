@@ -14,8 +14,6 @@ import {
 
 import { ElButton, ElImage, ElSwitch, ElTag } from 'element-plus';
 
-import { $t } from '#/locales';
-
 import { useVbenForm } from './form';
 
 setupVbenVxeTable({
@@ -77,13 +75,13 @@ setupVbenVxeTable({
         const tagOptions = options ?? [
           {
             effect: 'plain',
-            label: $t('common.enabled'),
+            label: '已启用',
             type: 'success',
             value: true,
           },
           {
             effect: 'plain',
-            label: $t('common.disabled'),
+            label: '已禁用',
             type: 'info',
             value: false,
           },
@@ -103,9 +101,9 @@ setupVbenVxeTable({
         const loadingKey = `__loading_${column.field}`;
         const canChange = attrs?.canChange?.(!row[column.field], row) !== false;
         const finallyProps = {
-          activeText: $t('common.enabled'),
+          activeText: '已启用',
           activeValue: true,
-          inactiveText: $t('common.disabled'),
+          inactiveText: '已禁用',
           inactiveValue: false,
           inlinePrompt: true,
           ...props,

@@ -68,7 +68,7 @@ describe('preferences', () => {
   it('initializes preferences with overrides', async () => {
     const overrides: any = {
       app: {
-        locale: 'en-US',
+        name: 'Standard Admin',
       },
     };
     await preferenceManager.initPreferences({
@@ -175,12 +175,12 @@ describe('preferences', () => {
     expect(preferenceManager.getPreferences().app.isMobile).toBe(true);
   });
 
-  it('updates the locale preference correctly', () => {
+  it('updates the name preference correctly', () => {
     preferenceManager.updatePreferences({
-      app: { locale: 'en-US' },
+      app: { name: 'Standard Admin' },
     });
 
-    expect(preferenceManager.getPreferences().app.locale).toBe('en-US');
+    expect(preferenceManager.getPreferences().app.name).toBe('Standard Admin');
   });
 
   it('updates the sidebar width correctly', () => {
@@ -210,7 +210,7 @@ describe('preferences', () => {
   it('resets preferences to default correctly', async () => {
     // 先更新一些偏好设置
     preferenceManager.updatePreferences({
-      app: { locale: 'en-US' },
+      app: { name: 'Standard Admin' },
       sidebar: { collapsed: true, width: 200 },
       theme: {
         mode: 'light',
@@ -235,14 +235,14 @@ describe('preferences', () => {
 
   it('reverts to default when a preference field is deleted', () => {
     preferenceManager.updatePreferences({
-      app: { locale: 'en-US' },
+      app: { name: 'Standard Admin' },
     });
 
     preferenceManager.updatePreferences({
-      app: { locale: undefined },
+      app: { name: undefined },
     });
 
-    expect(preferenceManager.getPreferences().app.locale).toBe('en-US');
+    expect(preferenceManager.getPreferences().app.name).toBe('Standard Admin');
   });
 
   it('ignores updates with invalid preference value types', () => {
@@ -274,7 +274,7 @@ describe('preferences', () => {
   it('applies updates immediately after initialization', async () => {
     const overrides: any = {
       app: {
-        locale: 'en-US',
+        name: 'Standard Admin',
       },
     };
 

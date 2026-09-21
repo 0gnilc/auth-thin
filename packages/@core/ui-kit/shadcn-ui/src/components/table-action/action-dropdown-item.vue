@@ -3,7 +3,6 @@ import type { ActionItem } from './types';
 
 import { computed, ref } from 'vue';
 
-import { useSimpleLocale } from '@vben-core/composables';
 import { cn } from '@vben-core/shared/utils';
 
 import {
@@ -17,7 +16,6 @@ import { VbenIcon } from '../icon';
 
 const props = defineProps<{ action: ActionItem }>();
 const emit = defineEmits<{ confirm: [] }>();
-const { $t } = useSimpleLocale();
 const open = ref(false);
 
 const itemClass = computed(() =>
@@ -86,18 +84,18 @@ function onCancel() {
       @open-auto-focus="preventDefault"
     >
       <div class="text-foreground mb-3 text-sm">
-        {{ action.popConfirm.title ?? $t('confirmTitle') }}
+        {{ action.popConfirm.title ?? '请确认' }}
       </div>
       <div class="flex justify-end gap-2">
         <VbenButton size="sm" variant="outline" @click="onCancel">
-          {{ action.popConfirm.cancelText ?? $t('cancel') }}
+          {{ action.popConfirm.cancelText ?? '取消' }}
         </VbenButton>
         <VbenButton
           :variant="action.danger ? 'destructive' : 'default'"
           size="sm"
           @click="onConfirm"
         >
-          {{ action.popConfirm.okText ?? $t('confirm') }}
+          {{ action.popConfirm.okText ?? '确认' }}
         </VbenButton>
       </div>
     </PopoverContent>

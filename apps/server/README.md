@@ -1,6 +1,6 @@
 # gnilc-auth Server
 
-Spring Boot 3 / Java 17 application with reusable authentication and RBAC modules, administrator identity, Redis sessions, and dynamic internationalization.
+Spring Boot 3 / Java 17 application with reusable authentication and RBAC modules, administrator identity, Redis sessions, and Simplified Chinese business messages.
 
 - `gnilc-bootstrap`: `com.gnilc.bootstrap.AuthBootApplication` and profiles.
 - `gnilc-core`: application adapters under `com.gnilc.core`.

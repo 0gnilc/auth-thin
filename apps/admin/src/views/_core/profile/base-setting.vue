@@ -11,7 +11,6 @@ import { ElMessage } from 'element-plus';
 
 import { z } from '#/adapter/form';
 import { getAdminUserInfo, updateProfile } from '#/api/core';
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 
 const profileBaseSettingRef = ref();
@@ -24,22 +23,19 @@ const formSchema = computed((): VbenFormSchema[] => {
       component: 'Input',
       componentProps: {
         maxlength: 255,
-        placeholder: $t('profile.form.nicknamePlaceholder'),
+        placeholder: '请输入昵称',
       },
-      label: $t('profile.form.nickname'),
-      rules: z
-        .string()
-        .trim()
-        .min(1, { message: $t('profile.form.nicknamePlaceholder') }),
+      label: '昵称',
+      rules: z.string().trim().min(1, { message: '请输入昵称' }),
     },
     {
       fieldName: 'avatar',
       component: 'Input',
       componentProps: {
         maxlength: 500,
-        placeholder: $t('profile.form.avatarPlaceholder'),
+        placeholder: '请输入头像 URL，留空可清除',
       },
-      label: $t('profile.form.avatar'),
+      label: '头像 URL',
     },
     {
       fieldName: 'desc',
@@ -49,7 +45,7 @@ const formSchema = computed((): VbenFormSchema[] => {
         rows: 4,
         type: 'textarea',
       },
-      label: $t('profile.form.description'),
+      label: '个人简介',
     },
   ];
 });
@@ -62,7 +58,7 @@ async function handleSubmit(values: Recordable<any>) {
   });
   const userInfo = await authStore.getUserInfo();
   profileBaseSettingRef.value?.getFormApi().setValues(userInfo);
-  ElMessage.success($t('profile.messages.basicUpdated'));
+  ElMessage.success('基本资料已更新');
 }
 
 onMounted(async () => {

@@ -15,7 +15,7 @@ const runtime = vi.hoisted(() => ({
 
 vi.mock('#/api/core', () => runtime);
 vi.mock('#/store', async () => import('#/store/auth'));
-vi.mock('#/locales', () => ({ $t: (key: string) => key }));
+
 vi.mock('element-plus', () => ({ ElMessage: { success: vi.fn() } }));
 vi.mock('vue-router', () => ({ useRouter: () => ({}) }));
 vi.mock('@vben/stores', () => ({

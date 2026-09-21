@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, unref } from 'vue';
 
-import { SUPPORT_LANGUAGES } from '@vben/constants';
-import { $t } from '@vben/locales';
 import { useTimezoneStore } from '@vben/stores';
 
 import InputItem from '../input-item.vue';
@@ -13,7 +11,6 @@ defineOptions({
   name: 'PreferenceGeneralConfig',
 });
 
-const appLocale = defineModel<string>('appLocale');
 const appTimezone = defineModel<string>('appTimezone');
 const appDynamicTitle = defineModel<boolean>('appDynamicTitle');
 const appWatermark = defineModel<boolean>('appWatermark');
@@ -46,19 +43,14 @@ async function onTimezoneChange(timezone: string | undefined) {
 </script>
 
 <template>
-  <SelectItem v-model="appLocale" :items="SUPPORT_LANGUAGES">
-    {{ $t('preferences.language') }}
-  </SelectItem>
   <SelectItem
     v-model="appTimezone"
     :items="timezoneOptionsRef"
     @update:model-value="onTimezoneChange"
   >
-    {{ $t('preferences.timezone') }}
+    时区
   </SelectItem>
-  <SwitchItem v-model="appDynamicTitle">
-    {{ $t('preferences.dynamicTitle') }}
-  </SwitchItem>
+  <SwitchItem v-model="appDynamicTitle"> 动态标题 </SwitchItem>
   <SwitchItem
     v-model="appWatermark"
     @update:model-value="
@@ -67,19 +59,17 @@ async function onTimezoneChange(timezone: string | undefined) {
       }
     "
   >
-    {{ $t('preferences.watermark') }}
+    水印
   </SwitchItem>
   <InputItem
     v-if="appWatermark"
     v-model="appWatermarkContent"
-    :placeholder="$t('preferences.watermarkContent')"
+    placeholder="请输入水印文案"
   >
-    {{ $t('preferences.watermarkContent') }}
+    请输入水印文案
   </InputItem>
-  <SwitchItem v-model="appEnableCheckUpdates">
-    {{ $t('preferences.checkUpdates') }}
-  </SwitchItem>
+  <SwitchItem v-model="appEnableCheckUpdates"> 定时检查更新 </SwitchItem>
   <SwitchItem v-model="appEnableCopyPreferences">
-    {{ $t('preferences.enableCopyPreferences') }}
+    显示复制偏好设置按钮
   </SwitchItem>
 </template>

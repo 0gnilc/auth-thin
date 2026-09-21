@@ -24,7 +24,6 @@ import type { Component } from 'vue';
 import type {
   ApiComponentSharedProps,
   BaseFormComponentType,
-  I18nMessageInputProps,
   IconPickerProps,
 } from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
@@ -33,13 +32,7 @@ import type { DateTimeRangeProps } from './date-time-range';
 
 import { defineAsyncComponent, defineComponent, h, ref } from 'vue';
 
-import {
-  ApiComponent,
-  globalShareState,
-  I18nMessageInput,
-  IconPicker,
-} from '@vben/common-ui';
-import { $t } from '@vben/locales';
+import { ApiComponent, globalShareState, IconPicker } from '@vben/common-ui';
 
 import { ElNotification } from 'element-plus';
 
@@ -152,9 +145,9 @@ const ElUpload = defineAsyncComponent(() =>
   ]).then(([res]) => res.ElUpload),
 );
 
-const placeholderMessageKeys = {
-  input: 'ui.placeholder.input',
-  select: 'ui.placeholder.select',
+const placeholderMessages = {
+  input: '请输入',
+  select: '请选择',
 } as const satisfies Record<'input' | 'select', string>;
 
 const withDefaultPlaceholder = (
@@ -167,9 +160,7 @@ const withDefaultPlaceholder = (
     inheritAttrs: false,
     setup: (props: any, { attrs, expose, slots }) => {
       const placeholder =
-        props?.placeholder ||
-        attrs?.placeholder ||
-        $t(placeholderMessageKeys[type]);
+        props?.placeholder || attrs?.placeholder || placeholderMessages[type];
       // 透传组件暴露的方法
       const innerRef = ref();
       expose(
@@ -202,7 +193,6 @@ export type ComponentType =
   | 'DatePicker'
   | 'DateTimeRange'
   | 'Divider'
-  | 'I18nMessageInput'
   | 'IconPicker'
   | 'Input'
   | 'InputNumber'
@@ -227,7 +217,6 @@ export interface ComponentPropsMap {
   DateTimeRange: DateTimeRangeProps;
   Divider: DividerProps;
   IconPicker: IconPickerProps;
-  I18nMessageInput: I18nMessageInputProps;
   Input: InputProps;
   InputNumber: InputNumberProps;
   RadioGroup: RadioGroupProps;
@@ -305,7 +294,6 @@ async function initComponentAdapter() {
       modelValueProp: 'model-value',
       inputComponent: ElInput,
     }),
-    I18nMessageInput: withDefaultPlaceholder(I18nMessageInput, 'select'),
     Input: withDefaultPlaceholder(ElInput, 'input'),
     InputNumber: withDefaultPlaceholder(ElInputNumber, 'input'),
     RadioGroup: (props, { attrs, slots }) => {

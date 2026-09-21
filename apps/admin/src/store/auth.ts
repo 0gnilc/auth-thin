@@ -16,7 +16,6 @@ import {
   login as loginAdmin,
   logout as logoutAdmin,
 } from '#/api/core';
-import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -47,9 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
 
         try {
           userInfo = await getUserInfo();
-
-          const { loadDynamicMessages } = await import('#/locales/dynamic');
-          await loadDynamicMessages();
         } catch (error) {
           await resetSessionState();
           throw error;
@@ -67,8 +63,8 @@ export const useAuthStore = defineStore('auth', () => {
 
         if (userInfo?.nickname) {
           ElNotification({
-            message: `${$t('authentication.loginSuccessDesc')}:${userInfo?.nickname}`,
-            title: $t('authentication.loginSuccess'),
+            message: `${'欢迎回来'}:${userInfo?.nickname}`,
+            title: '登录成功',
             type: 'success',
           });
         }
@@ -88,7 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
         await logoutAdmin(accessStore.refreshToken);
       }
     } catch {
-      // 远端注销失败仍要清理本地身份、菜单和动态消息，不能让旧会话继续留在页面。
+      // 远端注销失败仍要清理本地身份、菜单，不能让旧会话继续留在页面。
     }
     await resetSessionState();
 
@@ -119,12 +115,10 @@ export const useAuthStore = defineStore('auth', () => {
     await router.replace(LOGIN_PATH);
   }
 
-  /** 同时清理会话派生状态和动态消息快照，防止下一次登录沿用上一会话内容。 */
+  /** 同时清理会话派生状态，防止下一次登录沿用上一会话内容。 */
   async function resetSessionState() {
     resetAllStores();
     accessStore.setLoginExpired(false);
-    const { clearDynamicMessages } = await import('#/locales/dynamic');
-    await clearDynamicMessages();
   }
 
   function $reset() {

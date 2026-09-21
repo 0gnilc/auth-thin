@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { I18nMessage } from '@vben/common-ui';
-
 import type { MenuForm, MenuType } from '../data';
 
 import type { VbenFormSchema } from '#/adapter/form';
@@ -15,17 +13,9 @@ import { ElMessage } from 'element-plus';
 
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
 import { useVbenForm } from '#/adapter/form';
-import {
-  createMenu,
-  getI18nMessageValues,
-  MenuApi as MenuConstants,
-  saveI18nMessage,
-  updateMenu,
-} from '#/api/system';
-import { $t, SUPPORTED_LOCALES } from '#/locales';
-import { reloadDynamicMessages } from '#/locales/dynamic';
+import { createMenu, MenuApi as MenuConstants, updateMenu } from '#/api/system';
 
-import { createMenuForm, menuTypeMessageKeys } from '../data';
+import { createMenuForm, menuTypeLabels } from '../data';
 
 /** 菜单创建或更新抽屉的菜单树及定位信息。 */
 export interface MenuFormDrawerData {
@@ -101,7 +91,7 @@ function parentOptions(values: Partial<MenuForm>): ParentOption[] {
       .map((item) => ({
         children: map(item.children ?? []),
         disabled: blocked.has(item.id),
-        label: $t(item.title),
+        label: item.title,
         value: item.id,
       }));
   const options = map(menus.value);
@@ -110,24 +100,10 @@ function parentOptions(values: Partial<MenuForm>): ParentOption[] {
     : [
         {
           children: options,
-          label: $t('systemMenu.root'),
+          label: '根菜单',
           value: '0',
         },
       ];
-}
-
-async function loadTitle(messageKey: string) {
-  return getI18nMessageValues(messageKey);
-}
-
-async function saveTitle(message: I18nMessage) {
-  const result = await saveI18nMessage({ category: 'admin', ...message });
-  try {
-    await reloadDynamicMessages();
-  } catch {
-    ElMessage.warning($t('i18nMessage.messages.runtimeReloadFailed'));
-  }
-  return result;
 }
 
 const navigationTypes = new Set<MenuType>([
@@ -146,12 +122,12 @@ type RequiredMenuField =
   | 'link'
   | 'path';
 
-const menuValidationMessageKeys = {
-  accessCode: 'systemMenu.validation.accessCode',
-  component: 'systemMenu.validation.component',
-  iframeSrc: 'systemMenu.validation.iframeSrc',
-  link: 'systemMenu.validation.link',
-  path: 'systemMenu.validation.path',
+const menuValidationMessages = {
+  accessCode: '请输入按钮权限码',
+  component: '请输入组件路径',
+  iframeSrc: '请输入内嵌页面 URL',
+  link: '请输入外链 URL',
+  path: '请输入路由路径',
 } as const satisfies Record<RequiredMenuField, string>;
 
 const schema: VbenFormSchema[] = [
@@ -168,7 +144,7 @@ const schema: VbenFormSchema[] = [
             void actions.setFieldValue('pid', undefined, false);
           },
           options: MenuConstants.MenuTypes.map((value) => ({
-            label: $t(menuTypeMessageKeys[value]),
+            label: menuTypeLabels[value],
             value,
           })),
         },
@@ -177,8 +153,8 @@ const schema: VbenFormSchema[] = [
     },
     fieldName: 'type',
     formItemClass: 'col-span-full',
-    help: $t('systemMenu.form.typeImmutable'),
-    label: $t('systemMenu.form.type'),
+    help: '保存成功后类型不可再修改',
+    label: '菜单类型',
     rules: 'selectRequired',
   },
   {
@@ -197,24 +173,19 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['id', 'type'],
     },
     fieldName: 'pid',
-    label: $t('systemMenu.form.parent'),
+    label: '上级菜单',
     rules: 'selectRequired',
   },
   {
     component: 'Input',
     fieldName: 'name',
-    label: $t('systemMenu.form.name'),
+    label: '菜单名称',
     rules: 'required',
   },
   {
-    component: 'I18nMessageInput',
-    componentProps: {
-      load: loadTitle,
-      locales: SUPPORTED_LOCALES,
-      save: saveTitle,
-    },
+    component: 'Input',
     fieldName: 'title',
-    label: $t('systemMenu.form.title'),
+    label: '菜单标题',
     rules: 'required',
   },
   {
@@ -224,7 +195,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'path',
-    label: $t('systemMenu.form.path'),
+    label: '路由路径',
   },
   {
     component: 'Input',
@@ -233,7 +204,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'component',
-    label: $t('systemMenu.form.component'),
+    label: '组件路径',
   },
   {
     component: 'Input',
@@ -242,7 +213,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'accessCode',
-    label: $t('systemMenu.form.accessCode'),
+    label: '按钮权限码',
   },
   {
     component: 'Input',
@@ -252,7 +223,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'iframeSrc',
-    label: $t('systemMenu.form.iframeSrc'),
+    label: '内嵌页面 URL',
   },
   {
     component: 'Input',
@@ -262,25 +233,25 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'link',
-    label: $t('systemMenu.form.link'),
+    label: '外链 URL',
   },
   {
     component: 'RadioGroup',
     componentProps: {
       isButton: true,
       options: [
-        { label: $t('rbacCommon.enabled'), value: true },
-        { label: $t('rbacCommon.disabled'), value: false },
+        { label: '启用', value: true },
+        { label: '禁用', value: false },
       ],
     },
     fieldName: 'status',
-    label: $t('systemMenu.form.status'),
+    label: '启用状态',
   },
   {
     component: 'InputNumber',
     componentProps: { max: 9999, min: -9999 },
     fieldName: 'order',
-    label: $t('systemMenu.form.order'),
+    label: '排序',
   },
   {
     component: 'Divider',
@@ -293,7 +264,7 @@ const schema: VbenFormSchema[] = [
     formItemClass: 'col-span-full !pb-2',
     hideLabel: true,
     renderComponentContent: () => ({
-      default: () => $t('systemMenu.sections.routing'),
+      default: () => '路由配置',
     }),
   },
   {
@@ -303,7 +274,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'redirect',
-    label: $t('systemMenu.form.redirect'),
+    label: '重定向',
   },
   {
     component: 'Input',
@@ -312,7 +283,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'activePath',
-    label: $t('systemMenu.form.activePath'),
+    label: '激活菜单路径',
   },
   {
     component: 'IconPicker',
@@ -321,7 +292,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'icon',
-    label: $t('systemMenu.form.icon'),
+    label: '图标',
   },
   {
     component: 'Input',
@@ -336,7 +307,7 @@ const schema: VbenFormSchema[] = [
     },
     fieldName: 'query',
     formItemClass: 'col-span-full',
-    label: $t('systemMenu.form.query'),
+    label: '路由查询参数（JSON 对象）',
   },
   {
     component: 'Divider',
@@ -349,7 +320,7 @@ const schema: VbenFormSchema[] = [
     formItemClass: 'col-span-full !pb-2',
     hideLabel: true,
     renderComponentContent: () => ({
-      default: () => $t('systemMenu.sections.badgeAndTabs'),
+      default: () => '徽标与标签页',
     }),
   },
   {
@@ -359,7 +330,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'badge',
-    label: $t('systemMenu.form.badge'),
+    label: '徽标内容',
   },
   {
     component: 'Select',
@@ -375,7 +346,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'badgeType',
-    label: $t('systemMenu.form.badgeType'),
+    label: '徽标类型',
   },
   {
     component: 'Select',
@@ -391,7 +362,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'badgeVariants',
-    label: $t('systemMenu.form.badgeVariants'),
+    label: '徽标样式',
   },
   {
     component: 'InputNumber',
@@ -401,7 +372,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['affixTab', 'type'],
     },
     fieldName: 'affixTabOrder',
-    label: $t('systemMenu.form.affixTabOrder'),
+    label: '固定标签页排序',
   },
   {
     component: 'InputNumber',
@@ -411,7 +382,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'maxNumOfOpenTab',
-    label: $t('systemMenu.form.maxNumOfOpenTab'),
+    label: '最大同名标签数',
   },
   {
     component: 'Divider',
@@ -424,7 +395,7 @@ const schema: VbenFormSchema[] = [
     formItemClass: 'col-span-full !pb-2',
     hideLabel: true,
     renderComponentContent: () => ({
-      default: () => $t('systemMenu.sections.behavior'),
+      default: () => '显示与行为',
     }),
   },
   {
@@ -434,7 +405,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'affixTab',
-    label: $t('systemMenu.form.affixTab'),
+    label: '固定标签页',
   },
   {
     component: 'Switch',
@@ -443,7 +414,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'fullPathKey',
-    label: $t('systemMenu.form.fullPathKey'),
+    label: '完整路径作为标签 Key',
   },
   {
     component: 'Switch',
@@ -452,7 +423,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'hideChildrenInMenu',
-    label: $t('systemMenu.form.hideChildrenInMenu'),
+    label: '隐藏子菜单',
   },
   {
     component: 'Switch',
@@ -461,7 +432,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'hideInBreadcrumb',
-    label: $t('systemMenu.form.hideInBreadcrumb'),
+    label: '在面包屑隐藏',
   },
   {
     component: 'Switch',
@@ -470,7 +441,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'hideInMenu',
-    label: $t('systemMenu.form.hideInMenu'),
+    label: '在菜单隐藏',
   },
   {
     component: 'Switch',
@@ -479,7 +450,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'hideInTab',
-    label: $t('systemMenu.form.hideInTab'),
+    label: '在标签页隐藏',
   },
   {
     component: 'Switch',
@@ -488,7 +459,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'keepAlive',
-    label: $t('systemMenu.form.keepAlive'),
+    label: '缓存页面',
   },
   {
     component: 'Switch',
@@ -497,7 +468,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'noBasicLayout',
-    label: $t('systemMenu.form.noBasicLayout'),
+    label: '不使用基础布局',
   },
   {
     component: 'Switch',
@@ -506,7 +477,7 @@ const schema: VbenFormSchema[] = [
       triggerFields: ['type'],
     },
     fieldName: 'openInNewWindow',
-    label: $t('systemMenu.form.openInNewWindow'),
+    label: '在新窗口打开',
   },
 ];
 
@@ -542,14 +513,14 @@ function isHttpUrl(value: unknown) {
 function validateMenu(values: MenuForm) {
   const missing = requiredByType(values);
   if (missing) {
-    ElMessage.error($t(menuValidationMessageKeys[missing]));
+    ElMessage.error(menuValidationMessages[missing]);
     return false;
   }
   if (
     (values.type === 'embedded' && !isHttpUrl(values.iframeSrc)) ||
     (values.type === 'link' && !isHttpUrl(values.link))
   ) {
-    ElMessage.error($t('systemMenu.validation.url'));
+    ElMessage.error('请输入完整的 http 或 https 地址');
     return false;
   }
   const parent = findMenu(values.pid);
@@ -557,7 +528,7 @@ function validateMenu(values: MenuForm) {
     (values.pid === '0' && values.type === 'button') ||
     (parent && !parentAllows(parent, values.type))
   ) {
-    ElMessage.error($t('systemMenu.validation.parentType'));
+    ElMessage.error('所选上级菜单不能包含当前菜单类型');
     return false;
   }
   if (values.query) {
@@ -567,7 +538,7 @@ function validateMenu(values: MenuForm) {
         throw new Error('Query must be an object');
       }
     } catch {
-      ElMessage.error($t('systemMenu.validation.query'));
+      ElMessage.error('路由查询参数必须是有效的 JSON 对象');
       return false;
     }
   }
@@ -617,7 +588,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await (id ? updateMenu({ id, ...data }) : createMenu(data));
       saved.value = true;
-      ElMessage.success($t('systemMenu.messages.saveSuccess'));
+      ElMessage.success('菜单已保存');
       emit('success');
       await drawerApi.close();
     } finally {
@@ -669,9 +640,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
           parent?.type === 'menu' ? 'button' : 'menu',
         );
     drawerApi.setState({
-      title: row
-        ? $t('systemMenu.drawer.editTitle')
-        : $t('systemMenu.drawer.createTitle'),
+      title: row ? '修改菜单' : '新增菜单',
     });
     await formApi.reset();
     await nextTick();

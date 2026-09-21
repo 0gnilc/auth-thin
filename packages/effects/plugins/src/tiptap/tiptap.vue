@@ -9,7 +9,6 @@ import type {
 import { computed, onBeforeUnmount, reactive, watch } from 'vue';
 
 import { Check, ChevronDown, Eye } from '@vben/icons';
-import { $t } from '@vben/locales';
 
 import { useVbenModal } from '@vben-core/popup-ui';
 import { VbenIconButton, VbenPopover } from '@vben-core/shadcn-ui';
@@ -29,7 +28,7 @@ const props = withDefaults(defineProps<TipTapProps>(), {
   imageUpload: undefined,
   minHeight: 240,
   maxHeight: 400,
-  placeholder: $t('ui.tiptap.placeholder'),
+  placeholder: '请输入内容...',
   previewable: true,
   toolbar: true,
 });
@@ -277,7 +276,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="clearPaletteColor(action)"
               >
-                {{ $t('ui.tiptap.toolbar.clear') }}
+                清除
               </button>
             </div>
             <div v-else-if="action.menu" class="flex min-w-32 flex-col gap-1">
@@ -324,14 +323,14 @@ onBeforeUnmount(() => {
       </div>
       <div v-if="previewable" class="ml-auto flex items-center">
         <VbenIconButton
-          :aria-label="$t('ui.tiptap.toolbar.preview')"
+          aria-label="预览"
           :class="
             getToolbarButtonClass({
               action: () => {},
-              label: $t('ui.tiptap.toolbar.preview'),
+              label: '预览',
             })
           "
-          :tooltip="$t('ui.tiptap.toolbar.preview')"
+          tooltip="预览"
           tooltip-side="top"
           variant="ghost"
           @click="openPreviewModal"
@@ -341,11 +340,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <EditorContent v-if="editor" :editor="editor" class="p-4" />
-    <PreviewModal
-      v-if="previewable"
-      :title="$t('ui.tiptap.toolbar.preview')"
-      class="w-4/5"
-    >
+    <PreviewModal v-if="previewable" title="预览" class="w-4/5">
       <Preview :content="previewContent" :min-height="320" />
     </PreviewModal>
   </div>

@@ -84,23 +84,8 @@ public class AdminApiTestConfiguration {
                     .execute(dataSource);
             new ResourceDatabasePopulator(new ClassPathResource("sql/schema/05_admin_permissions.sql"))
                     .execute(dataSource);
-            new ResourceDatabasePopulator(new ClassPathResource("sql/schema/06_i18n.sql"))
-                    .execute(dataSource);
             new ResourceDatabasePopulator(new ClassPathResource("sql/schema/07_rbac_admin.sql"))
                     .execute(dataSource);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             retainDefaultAdminTestRoles(jdbc);
             jdbc.update("""

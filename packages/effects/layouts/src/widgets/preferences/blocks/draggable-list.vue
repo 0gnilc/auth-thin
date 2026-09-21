@@ -4,7 +4,6 @@ import type { SelectOption } from '@vben/types';
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 
 import { GripVertical } from '@vben/icons';
-import { $t } from '@vben/locales';
 
 import Sortable from 'sortablejs';
 
@@ -110,9 +109,7 @@ function setPosition(key: string, value: string | undefined) {
       </div>
     </div>
     <div v-if="hiddenList.length > 0" class="pt-2">
-      <div class="text-muted-foreground mb-1 text-xs font-medium">
-        {{ $t('preferences.widget.hidden') }}
-      </div>
+      <div class="text-muted-foreground mb-1 text-xs font-medium">已隐藏</div>
       <div
         v-for="item in hiddenList"
         :key="item.key"

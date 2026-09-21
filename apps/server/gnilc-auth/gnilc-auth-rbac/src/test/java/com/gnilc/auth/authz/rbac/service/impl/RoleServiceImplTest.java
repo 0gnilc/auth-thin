@@ -30,19 +30,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 /** 验证角色输入原文、业务长度限制和删除关系清理，不通过隐式修剪改变角色身份。 */
-class RoleServiceImplTest extends RbacMessageTestSupport {
+class RoleServiceImplTest {
     @Test
-    void createRoleRejectsMissingInformationWithTheDefaultLocale() {
+    void createRoleRejectsMissingInformationWithChineseMessages() {
         RoleServiceImpl roles = new RoleServiceImpl(
                 mock(ApplicationEventPublisher.class),
                 mock(UserRoleService.class),
                 mock(RolePermissionService.class),
-                mock(RoleMenuService.class),
-                messages());
+                mock(RoleMenuService.class));
 
         assertThatThrownBy(() -> roles.createRole(null))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Role information is required.");
+                .hasMessage("角色信息不能为空。");
     }
 
     @Test
@@ -54,7 +53,7 @@ class RoleServiceImplTest extends RbacMessageTestSupport {
 
         assertThatThrownBy(() -> fixture.getService().createRole(dto))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Role name is required.");
+                .hasMessage("角色名称不能为空。");
         verifyNoRoleWrite(fixture);
     }
 
@@ -66,7 +65,7 @@ class RoleServiceImplTest extends RbacMessageTestSupport {
 
         assertThatThrownBy(() -> fixture.getService().createRole(dto))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Role code is required.");
+                .hasMessage("角色编码不能为空。");
         verifyNoRoleWrite(fixture);
     }
 
@@ -140,8 +139,7 @@ class RoleServiceImplTest extends RbacMessageTestSupport {
                 mock(ApplicationEventPublisher.class),
                 userRoles,
                 rolePermissions,
-                roleMenus,
-                messages()));
+                roleMenus));
         RoleBo role = new RoleBo();
         role.setId(7L);
         String originalCode = "\uD83D\uDE00".repeat(255);
@@ -166,8 +164,7 @@ class RoleServiceImplTest extends RbacMessageTestSupport {
                 publisher,
                 mock(UserRoleService.class),
                 mock(RolePermissionService.class),
-                mock(RoleMenuService.class),
-                messages()));
+                mock(RoleMenuService.class)));
         doAnswer(invocation -> {
             ((RoleBo) invocation.getArgument(0)).setId(10L);
             return true;
@@ -200,9 +197,9 @@ class RoleServiceImplTest extends RbacMessageTestSupport {
 
     private static Stream<Arguments> roleLengthBoundaries() {
         return Stream.of(
-                Arguments.of("code", 255, "r", "Role code must not exceed 255 characters."),
-                Arguments.of("name", 255, "\uD83D\uDE00", "Role name must not exceed 255 characters."),
-                Arguments.of("remark", 500, "m", "Role description must not exceed 500 characters."));
+                Arguments.of("code", 255, "r", "角色编码不能超过 255 个字符。"),
+                Arguments.of("name", 255, "\uD83D\uDE00", "角色名称不能超过 255 个字符。"),
+                Arguments.of("remark", 500, "m", "角色描述不能超过 500 个字符。"));
     }
 
     private static Stream<Arguments> exactRoleRemarks() {

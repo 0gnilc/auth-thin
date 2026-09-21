@@ -3,8 +3,6 @@ import type { RouteRecordRaw } from 'vue-router';
 import { LOGIN_PATH } from '@vben/constants';
 import { preferences } from '@vben/preferences';
 
-import { $t } from '#/locales';
-
 import { workspaceRedirectRoute } from './modules/dashboard';
 
 const BasicLayout = () => import('#/layouts/basic.vue');
@@ -56,7 +54,7 @@ const coreRoutes: RouteRecordRaw[] = [
         path: 'login',
         component: () => import('#/views/_core/authentication/login.vue'),
         meta: {
-          title: $t('auth.login'),
+          title: '登录',
         },
       },
       {
@@ -65,7 +63,7 @@ const coreRoutes: RouteRecordRaw[] = [
         component: () =>
           import('#/views/_core/authentication/forget-password.vue'),
         meta: {
-          title: $t('auth.forgetPassword'),
+          title: '忘记密码',
         },
       },
     ],

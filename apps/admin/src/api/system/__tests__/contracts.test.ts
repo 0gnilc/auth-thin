@@ -2,26 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createAdmin,
-  createI18nMessage,
   createMenu,
   createPermission,
   createRole,
   getAdminPage,
-  getI18nMessageCategories,
-  getI18nMessagePage,
-  getI18nMessageValues,
   getMenuTree,
   getPermissionList,
   getRoleList,
   getRoleMenuIds,
   getRolePermissionIds,
   removeAdmin,
-  removeI18nMessage,
   removeMenu,
   removePermission,
   removeRole,
   saveAdminRoles,
-  saveI18nMessage,
   saveRoleMenus,
   saveRolePermissions,
   updateAdmin,
@@ -29,8 +23,6 @@ import {
   updatePermission,
   updateRole,
 } from '#/api/system';
-
-import { getI18nMessageBundle } from '../../core/i18n-message';
 
 const request = vi.hoisted(() => ({ post: vi.fn() }));
 
@@ -149,7 +141,7 @@ describe('system management API contracts', () => {
       path: '/reports',
       pid: '0',
       status: true,
-      title: 'menu.reports.title',
+      title: '报表',
       type: 'catalog' as const,
     };
     await getMenuTree();
@@ -162,32 +154,6 @@ describe('system management API contracts', () => {
       ['/authz/menu/create', data],
       ['/authz/menu/update', { id: '20', ...data }],
       ['/authz/menu/remove/20'],
-    ]);
-  });
-
-  it('uses global message keys with category-scoped administration', async () => {
-    const data = {
-      category: 'default',
-      messageKey: 'menu.example.title',
-      values: [{ locale: 'en-US', value: 'Example' }],
-    };
-
-    await getI18nMessageCategories();
-    await getI18nMessagePage({ category: 'default', key: 'menu.example' });
-    await getI18nMessageValues('menu.example.title');
-    await createI18nMessage(data);
-    await saveI18nMessage(data);
-    await removeI18nMessage('menu.example.title');
-    await getI18nMessageBundle();
-
-    expect(request.post.mock.calls).toEqual([
-      ['/sys/i18n-message/categories'],
-      ['/sys/i18n-message/page', { category: 'default', key: 'menu.example' }],
-      ['/sys/i18n-message/values/menu.example.title'],
-      ['/sys/i18n-message/create', data],
-      ['/sys/i18n-message/save', data],
-      ['/sys/i18n-message/remove/menu.example.title'],
-      ['/sys/i18n-message/bundle/admin'],
     ]);
   });
 });

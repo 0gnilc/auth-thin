@@ -29,7 +29,6 @@ import { updateCSSVariables } from './update-css-variables';
 const STORAGE_KEYS = {
   CUSTOM: 'preferences-custom',
   MAIN: 'preferences',
-  LOCALE: 'preferences-locale',
   THEME: 'preferences-theme',
 } as const;
 
@@ -427,7 +426,6 @@ class PreferenceManager {
   private async saveToCache() {
     try {
       await this.cache.setItem(STORAGE_KEYS.MAIN, this.state);
-      await this.cache.setItem(STORAGE_KEYS.LOCALE, this.state.app.locale);
       await this.cache.setItem(STORAGE_KEYS.THEME, this.state.theme.mode);
 
       if (this.customPreferencesExtension) {

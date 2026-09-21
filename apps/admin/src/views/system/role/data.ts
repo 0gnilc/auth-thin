@@ -2,31 +2,29 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { RoleApi } from '#/api/system';
 
-import { $t } from '#/locales';
-
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
       fieldName: 'code',
-      label: $t('systemRole.form.code'),
+      label: '角色标识',
     },
     {
       component: 'Input',
       fieldName: 'name',
-      label: $t('systemRole.form.name'),
+      label: '角色名称',
     },
     {
       component: 'Select',
       componentProps: {
         clearable: true,
         options: [
-          { label: $t('rbacCommon.builtIn'), value: true },
-          { label: $t('rbacCommon.custom'), value: false },
+          { label: '内置', value: true },
+          { label: '自定义', value: false },
         ],
       },
       fieldName: 'builtIn',
-      label: $t('systemRole.table.type'),
+      label: '类型',
     },
   ];
 }
@@ -36,29 +34,29 @@ export function useColumns(): VxeTableGridColumns<RoleApi.Role> {
     {
       field: 'code',
       minWidth: 170,
-      title: $t('systemRole.table.code'),
+      title: '角色标识',
     },
     {
       field: 'name',
       minWidth: 170,
-      title: $t('systemRole.table.name'),
+      title: '角色名称',
     },
     {
       field: 'remark',
       minWidth: 220,
-      title: $t('systemRole.table.remark'),
+      title: '描述',
     },
     {
       align: 'center',
       field: 'builtIn',
       slots: { default: 'type' },
-      title: $t('systemRole.table.type'),
+      title: '类型',
       width: 110,
     },
     {
       field: 'createTime',
       formatter: 'formatDateTime',
-      title: $t('systemRole.table.createTime'),
+      title: '创建时间',
       width: 180,
     },
     {
@@ -66,7 +64,7 @@ export function useColumns(): VxeTableGridColumns<RoleApi.Role> {
       field: 'operation',
       fixed: 'right',
       slots: { default: 'action' },
-      title: $t('rbacCommon.actions'),
+      title: '操作',
       width: 280,
     },
   ];

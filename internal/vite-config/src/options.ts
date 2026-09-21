@@ -36,7 +36,6 @@ const defaultImportmapOptions: ImportmapPluginOptions = {
     { name: 'vue' },
     { name: 'pinia' },
     { name: 'vue-router' },
-    // { name: 'vue-i18n' },
     { name: 'dayjs' },
     { name: 'vue-demi' },
   ],

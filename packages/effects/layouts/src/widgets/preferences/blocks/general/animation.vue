@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { $t } from '@vben/locales';
-
 import SwitchItem from '../switch-item.vue';
 
 defineOptions({
@@ -23,15 +21,9 @@ function handleClick(value: string) {
 </script>
 
 <template>
-  <SwitchItem v-model="transitionProgress">
-    {{ $t('preferences.animation.progress') }}
-  </SwitchItem>
-  <SwitchItem v-model="transitionLoading">
-    {{ $t('preferences.animation.loading') }}
-  </SwitchItem>
-  <SwitchItem v-model="transitionEnable">
-    {{ $t('preferences.animation.transition') }}
-  </SwitchItem>
+  <SwitchItem v-model="transitionProgress"> 页面切换进度条 </SwitchItem>
+  <SwitchItem v-model="transitionLoading"> 页面切换 Loading </SwitchItem>
+  <SwitchItem v-model="transitionEnable"> 页面切换动画 </SwitchItem>
   <div
     v-if="transitionEnable"
     class="mt-3 mb-2 flex justify-between gap-3 px-2"

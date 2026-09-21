@@ -3,8 +3,6 @@ import type { SelectOption } from '@vben/types';
 
 import { computed } from 'vue';
 
-import { $t } from '@vben/locales';
-
 import NumberFieldItem from '../number-field-item.vue';
 import SelectItem from '../select-item.vue';
 import SwitchItem from '../switch-item.vue';
@@ -31,20 +29,20 @@ const tabbarMiddleClickToClose = defineModel<boolean>(
 
 const styleItems = computed((): SelectOption[] => [
   {
-    label: $t('preferences.tabbar.styleType.chrome'),
+    label: '谷歌',
     value: 'chrome',
   },
   {
-    label: $t('preferences.tabbar.styleType.plain'),
+    label: '朴素',
     value: 'plain',
   },
   {
-    label: $t('preferences.tabbar.styleType.card'),
+    label: '卡片',
     value: 'card',
   },
 
   {
-    label: $t('preferences.tabbar.styleType.brisk'),
+    label: '轻快',
     value: 'brisk',
   },
 ]);
@@ -52,17 +50,17 @@ const styleItems = computed((): SelectOption[] => [
 
 <template>
   <SwitchItem v-model="tabbarEnable" :disabled="disabled">
-    {{ $t('preferences.tabbar.enable') }}
+    启用标签栏
   </SwitchItem>
   <SwitchItem v-model="tabbarPersist" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.persist') }}
+    持久化标签页
   </SwitchItem>
   <SwitchItem
     v-model="tabbarVisitHistory"
     :disabled="!tabbarEnable"
-    :tip="$t('preferences.tabbar.visitHistoryTip')"
+    tip="开启后，标签栏会记录标签访问历史&#10;关闭当前标签，会自动选中上一个打开的标签"
   >
-    {{ $t('preferences.tabbar.visitHistory') }}
+    访问历史记录
   </SwitchItem>
   <NumberFieldItem
     v-model="tabbarMaxCount"
@@ -70,33 +68,33 @@ const styleItems = computed((): SelectOption[] => [
     :max="30"
     :min="0"
     :step="5"
-    :tip="$t('preferences.tabbar.maxCountTip')"
+    tip="每次打开新的标签时如果超过最大标签数，&#10;会自动关闭一个最先打开的标签&#10;设置为 0 则不限制"
   >
-    {{ $t('preferences.tabbar.maxCount') }}
+    最大标签数
   </NumberFieldItem>
   <SwitchItem v-model="tabbarDraggable" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.draggable') }}
+    启动拖拽排序
   </SwitchItem>
   <SwitchItem
     v-model="tabbarWheelable"
     :disabled="!tabbarEnable"
-    :tip="$t('preferences.tabbar.wheelableTip')"
+    tip="开启后，标签栏区域可以响应滚轮的纵向滚动事件。&#10;关闭时，只能响应系统的横向滚动事件（需要按下Shift再滚动滚轮）"
   >
-    {{ $t('preferences.tabbar.wheelable') }}
+    启用纵向滚轮响应
   </SwitchItem>
   <SwitchItem v-model="tabbarMiddleClickToClose" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.middleClickClose') }}
+    点击鼠标中键关闭标签页
   </SwitchItem>
   <SwitchItem v-model="tabbarShowIcon" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.icon') }}
+    显示标签栏图标
   </SwitchItem>
   <SwitchItem v-model="tabbarShowMore" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.showMore') }}
+    显示更多按钮
   </SwitchItem>
   <SwitchItem v-model="tabbarShowMaximize" :disabled="!tabbarEnable">
-    {{ $t('preferences.tabbar.showMaximize') }}
+    显示最大化按钮
   </SwitchItem>
   <SelectItem v-model="tabbarStyleType" :items="styleItems">
-    {{ $t('preferences.tabbar.styleType.title') }}
+    标签页风格
   </SelectItem>
 </template>

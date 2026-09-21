@@ -12,20 +12,11 @@ import { ElMessage, ElTree as ElTreeComponent } from 'element-plus';
 
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
 import { getMenuTree, getRoleMenuIds, saveRoleMenus } from '#/api/system';
-import { $t } from '#/locales';
-
-/** 角色菜单授权树节点，增加已本地化的显示标题。 */
-interface MenuTreeNode extends Omit<MenuApi.Menu, 'children'> {
-  /** 递归的角色可授权菜单节点。 */
-  children: MenuTreeNode[];
-  /** 已解析动态消息后的菜单显示标题。 */
-  displayTitle: string;
-}
 
 const emit = defineEmits<{ success: [] }>();
 
 const treeRef = ref<InstanceType<typeof ElTree>>();
-const treeData = ref<MenuTreeNode[]>([]);
+const treeData = ref<MenuApi.Menu[]>([]);
 const initialSelected = ref<string[]>([]);
 const currentSelected = ref<string[]>([]);
 const role = ref<RoleApi.Role>();
@@ -33,14 +24,6 @@ const saved = ref(false);
 
 function normalize(values: Array<number | string>) {
   return [...new Set(values.map(String))].toSorted();
-}
-
-function mapMenus(items: MenuApi.Menu[]): MenuTreeNode[] {
-  return items.map((item) => ({
-    ...item,
-    children: mapMenus(item.children ?? []),
-    displayTitle: $t(item.title),
-  }));
 }
 
 function readCheckedKeys() {
@@ -67,7 +50,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       initialSelected.value = menuIds;
       currentSelected.value = menuIds;
       saved.value = true;
-      ElMessage.success($t('systemRole.messages.menusSuccess'));
+      ElMessage.success('角色菜单已保存');
       emit('success');
       await drawerApi.close();
     } finally {
@@ -80,16 +63,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
     role.value = drawerApi.getData<RoleApi.Role>();
     drawerApi.setState({
       loading: true,
-      title: $t('systemRole.drawer.menusTitle', {
-        name: role.value.name,
-      }),
+      title: `为“${role.value.name}”进行菜单授权`,
     });
     try {
       const [menus, selected] = await Promise.all([
         getMenuTree(),
         getRoleMenuIds(role.value.id),
       ]);
-      treeData.value = mapMenus(menus);
+      treeData.value = menus;
       initialSelected.value = normalize(selected);
       currentSelected.value = normalize(selected);
       await nextTick();
@@ -114,12 +95,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
       show-checkbox
       check-on-click-node
       default-expand-all
-      :props="{ children: 'children', label: 'displayTitle' }"
+      :props="{ children: 'children', label: 'title' }"
       @check="onCheck"
     >
       <template #default="{ data }">
         <span class="flex min-w-0 items-center gap-2">
-          <span class="truncate">{{ data.displayTitle }}</span>
+          <span class="truncate">{{ data.title }}</span>
           <code class="text-xs text-muted-foreground">{{ data.name }}</code>
         </span>
       </template>

@@ -3,7 +3,6 @@ import { computed, useSlots } from 'vue';
 
 import { useRefresh } from '@vben/hooks';
 import { LockKeyhole, LogOut, RotateCw } from '@vben/icons';
-import { $t } from '@vben/locales';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 
@@ -18,7 +17,6 @@ import { useMagicKeys, whenever } from '@vueuse/core';
 
 import {
   GlobalSearch,
-  LanguageToggle,
   LockScreenModal,
   Notification,
   PreferencesButton,
@@ -163,12 +161,6 @@ const rightSlots = computed(() => {
         preferences.widget.themeToggleButtonPosition === 'header',
       slotName: 'theme-toggle',
     },
-    languageToggle: {
-      visible:
-        preferences.widget.languageToggle &&
-        preferences.widget.languageToggleButtonPosition === 'header',
-      slotName: 'language-toggle',
-    },
     timezone: {
       visible:
         preferences.widget.timezone &&
@@ -268,16 +260,16 @@ function clearPreferencesAndLogout() {
 
   <LogoutModal
     v-if="showLogoutInHeader"
-    :cancel-text="$t('common.cancel')"
-    :confirm-text="$t('common.confirm')"
+    cancel-text="取消"
+    confirm-text="确认"
     :fullscreen-button="false"
-    :title="$t('common.prompt')"
+    title="提示"
     centered
     content-class="px-8 min-h-10"
     footer-class="border-none mb-3 mr-3"
     header-class="border-none"
   >
-    {{ $t('ui.widgets.logoutTip') }}
+    是否退出登录？
   </LogoutModal>
 
   <template
@@ -326,7 +318,7 @@ function clearPreferencesAndLogout() {
                 @clear-preferences-and-logout="clearPreferencesAndLogout"
               />
             </template>
-            {{ $t('preferences.title') }}
+            偏好设置
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'theme-toggle'">
@@ -334,22 +326,11 @@ function clearPreferencesAndLogout() {
             <template #trigger>
               <ThemeToggle class="mt-0.5 mr-1" />
             </template>
-            {{ $t('preferences.theme.title') }}
-          </VbenTooltip>
-        </template>
-        <template v-else-if="slot.name === 'language-toggle'">
-          <VbenTooltip side="bottom">
-            <template #trigger>
-              <LanguageToggle class="mr-1" />
-            </template>
-            {{ $t('preferences.widget.languageToggle') }}
+            主题
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'fullscreen'">
-          <VbenFullScreen
-            class="mr-1"
-            :tooltip="$t('preferences.widget.fullscreen')"
-          />
+          <VbenFullScreen class="mr-1" tooltip="全屏" />
         </template>
         <template v-else-if="slot.name === 'timezone'">
           <TimezoneButton class="mt-0.5 mr-1" />
@@ -357,18 +338,14 @@ function clearPreferencesAndLogout() {
         <template v-else-if="slot.name === 'lock-screen-btn'">
           <VbenIconButton
             class="mr-1"
-            :tooltip="$t('ui.widgets.lockScreen.title')"
+            tooltip="锁定屏幕"
             @click="handleOpenLock"
           >
             <LockKeyhole class="size-4" />
           </VbenIconButton>
         </template>
         <template v-else-if="slot.name === 'logout-btn'">
-          <VbenIconButton
-            class="mr-1"
-            :tooltip="$t('common.logout')"
-            @click="handleLogout"
-          >
+          <VbenIconButton class="mr-1" tooltip="退出登录" @click="handleLogout">
             <LogOut class="size-4" />
           </VbenIconButton>
         </template>
@@ -377,13 +354,13 @@ function clearPreferencesAndLogout() {
             <template #trigger>
               <Notification class="mr-1" />
             </template>
-            {{ $t('preferences.widget.notification') }}
+            通知
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'refresh'">
           <VbenIconButton
             class="my-0 mr-1 rounded-md"
-            :tooltip="$t('preferences.widget.refresh')"
+            tooltip="刷新"
             @click="refresh"
           >
             <RotateCw class="size-4" />

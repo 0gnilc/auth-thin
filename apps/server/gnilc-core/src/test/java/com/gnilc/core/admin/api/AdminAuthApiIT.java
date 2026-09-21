@@ -100,8 +100,8 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(401)
                 .body("code", equalTo(20002))
-                .body("error", equalTo("Your login has expired. Please sign in again."))
-                .body("message", equalTo("Your login has expired. Please sign in again."));
+                .body("error", equalTo("登录已过期，请重新登录。"))
+                .body("message", equalTo("登录已过期，请重新登录。"));
 
         given()
                 .header("Authorization", bearer(secondRefreshedAccessToken))
@@ -158,7 +158,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(200)
                 .body("code", equalTo(20001))
-                .body("error", equalTo("Incorrect username or password."));
+                .body("error", equalTo("用户名或密码错误。"));
 
         given()
                 .header("Accept-Language", "zh-CN")
@@ -189,7 +189,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .body("data[0].name", equalTo("Dashboard"))
                 .body("data[0].path", equalTo("/dashboard"))
                 .body("data[0].component", equalTo("/dashboard/index"))
-                .body("data[0].meta.title", equalTo("menu.dashboard.title"))
+                .body("data[0].meta.title", equalTo("首页"))
                 .body("data[1].name", equalTo("System"))
                 .body("data[1].path", equalTo("/system"))
                 .body("data[1].children.size()", equalTo(4))
@@ -197,7 +197,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                         "Admin", "Role", "Permission", "Menu"))
                 .body("data[2].name", equalTo("Profile"))
                 .body("data[2].path", equalTo("/profile"))
-                .body("data[2].meta.title", equalTo("menu.profile.title"))
+                .body("data[2].meta.title", equalTo("个人中心"))
                 .body("data[2].meta.hideInMenu", equalTo(true));
     }
 
@@ -300,7 +300,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(400)
                 .body("code", equalTo(10001))
-                .body("error", equalTo("The request body is malformed."));
+                .body("error", equalTo("请求体格式错误。"));
     }
 
     @Test
@@ -355,7 +355,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(200)
                 .body("code", equalTo(10001))
-                .body("error", equalTo("Nickname format is invalid."));
+                .body("error", equalTo("昵称格式无效。"));
     }
 
     @Test
@@ -412,7 +412,7 @@ class AdminAuthApiIT extends AdminApiTestSupport {
                 .then()
                 .statusCode(200)
                 .body("code", equalTo(10001))
-                .body("error", equalTo("Current password is incorrect."));
+                .body("error", equalTo("当前密码错误。"));
 
         given()
                 .header("Authorization", bearer(pair.getAccessToken()))

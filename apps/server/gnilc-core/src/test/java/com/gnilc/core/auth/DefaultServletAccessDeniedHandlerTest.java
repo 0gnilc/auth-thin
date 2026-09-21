@@ -5,9 +5,7 @@ import com.gnilc.auth.authz.context.AccessIdentity;
 import com.gnilc.auth.authz.context.AccessTarget;
 import com.gnilc.auth.authz.denied.AccessDeniedContext;
 import com.gnilc.auth.authz.servlet.context.ServletAccessDeniedContext;
-import com.gnilc.common.i18n.I18nMessageService;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.support.StaticMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -16,12 +14,12 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** 验证仅为尚未提交的 Servlet 响应写本地化 403 JSON，不覆盖已提交响应。 */
+/** 验证仅为尚未提交的 Servlet 响应写中文 403 JSON，不覆盖已提交响应。 */
 class DefaultServletAccessDeniedHandlerTest {
     @Test
     void writesJson403OnlyForOpenServletResponse() throws Exception {
         DefaultServletAccessDeniedHandler handler = new DefaultServletAccessDeniedHandler(
-                messages(), AuthLocaleTestSupport.localeResolver());
+                );
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Accept-Language", "zh-CN");
         request.addPreferredLocale(Locale.SIMPLIFIED_CHINESE);
@@ -40,10 +38,4 @@ class DefaultServletAccessDeniedHandlerTest {
         assertThat(handler.supports(access, new AccessDeniedContext() { })).isFalse();
     }
 
-    private static I18nMessageService messages() {
-        StaticMessageSource source = new StaticMessageSource();
-        source.addMessage("system.auth.access.denied", Locale.US, "Access denied.");
-        source.addMessage("system.auth.access.denied", Locale.SIMPLIFIED_CHINESE, "访问被拒绝。");
-        return new I18nMessageService(source, "en-US");
-    }
 }

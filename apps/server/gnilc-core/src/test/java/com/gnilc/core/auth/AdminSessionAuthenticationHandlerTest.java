@@ -2,10 +2,8 @@ package com.gnilc.core.auth;
 
 import com.gnilc.auth.authn.handler.AuthenticationResult;
 import com.gnilc.auth.authn.servlet.context.ServletAuthenticationContext;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.core.session.AdminSessionManager;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.support.StaticMessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -16,11 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/** 验证管理员令牌命名空间分流、严格 Bearer 校验及请求语言下的失败原因。 */
+/** 验证管理员令牌命名空间分流、严格 Bearer 校验及固定中文失败原因。 */
 class AdminSessionAuthenticationHandlerTest {
     private final AdminSessionManager sessions = mock(AdminSessionManager.class);
     private final AdminSessionAuthenticationHandler handler =
-            new AdminSessionAuthenticationHandler(sessions, messages(), AuthLocaleTestSupport.localeResolver());
+            new AdminSessionAuthenticationHandler(sessions);
 
     @Test
     void bearerTokenSupportIsNamespacedBySessionManager() {
@@ -57,10 +55,10 @@ class AdminSessionAuthenticationHandlerTest {
     }
 
     @Test
-    void invalidTokenUsesTheFirstSupportedLanguagePreference() {
+    void invalidTokenIgnoresClientLanguagePreference() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Accept-Language", "fr-FR, zh-CN;q=0.9");
-        request.setPreferredLocales(List.of(Locale.FRANCE, Locale.SIMPLIFIED_CHINESE));
+        request.addHeader("Accept-Language", "en-US, fr-FR;q=0.9");
+        request.setPreferredLocales(List.of(Locale.US, Locale.FRANCE));
         request.addHeader("Authorization", "Bearer invalid");
         when(sessions.validateAccessToken("invalid")).thenReturn(null);
 
@@ -73,16 +71,4 @@ class AdminSessionAuthenticationHandlerTest {
         return new ServletAuthenticationContext(request, new MockHttpServletResponse());
     }
 
-    private static I18nMessageService messages() {
-        StaticMessageSource source = new StaticMessageSource();
-        source.addMessage(
-                "system.auth.accessToken.invalid",
-                Locale.US,
-                "The access token is invalid or has expired.");
-        source.addMessage(
-                "system.auth.accessToken.invalid",
-                Locale.SIMPLIFIED_CHINESE,
-                "访问令牌无效或已过期。");
-        return new I18nMessageService(source, "en-US");
-    }
 }

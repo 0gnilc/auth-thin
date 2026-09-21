@@ -2,7 +2,6 @@
 import { ref, unref } from 'vue';
 
 import { createIconifyIcon } from '@vben/icons';
-import { $t } from '@vben/locales';
 import { useTimezoneStore } from '@vben/stores';
 
 import { useVbenModal } from '@vben-core/popup-ui';
@@ -60,13 +59,13 @@ defineExpose({ open });
   <div>
     <VbenIconButton
       v-if="showButton"
-      :tooltip="$t('ui.widgets.timezone.setTimezone')"
+      tooltip="设置时区"
       class="hover:animate-[shrink_0.3s_ease-in-out]"
       @click="open"
     >
       <TimezoneIcon class="size-4 text-foreground" />
     </VbenIconButton>
-    <Modal :title="$t('ui.widgets.timezone.setTimezone')">
+    <Modal title="设置时区">
       <div class="timezone-container">
         <RadioGroup v-model="timezoneRef" class="flex flex-col gap-2">
           <div

@@ -1,6 +1,6 @@
 -- 由部署操作员在经过审核的初始化/迁移成功后记录；应用启动不会自动执行。
 CREATE TABLE IF NOT EXISTS sys_schema_history (
-    migration_id VARCHAR(100) NOT NULL COMMENT '不可变的迁移标识，基线使用 baseline-1',
+    migration_id VARCHAR(100) NOT NULL COMMENT '不可变的迁移标识，基线使用 baseline-2',
     checksum_sha256 CHAR(64) NOT NULL COMMENT '发布清单中的迁移内容 SHA-256',
     product_version VARCHAR(40) NOT NULL COMMENT '执行该迁移的产品版本',
     git_revision CHAR(40) NOT NULL COMMENT '发布源码的完整 Git 提交 SHA',

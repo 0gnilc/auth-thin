@@ -1,8 +1,8 @@
 # gnilc-auth
 
-A standalone administrator authentication and authorization workspace built with Vue 3, Vben, Element Plus, Spring Boot 3, MySQL and Redis.
+The `standard` branch is a Simplified Chinese scaffold for administrator authentication and authorization workspace built with Vue 3, Vben, Element Plus, Spring Boot 3, MySQL and Redis.
 
-It includes administrator sessions, profiles and password changes, administrator management, RBAC roles/permissions/menus, and dynamic internationalization. The application uses the current authentication, authorization, rejection handling and cache implementations.
+It includes administrator sessions, profiles and password changes, administrator management, RBAC roles/permissions/menus. The application uses the current authentication, authorization, rejection handling and cache implementations.
 
 - `apps/admin`: administrator UI.
 - `apps/server/gnilc-bootstrap`: executable application and profiles.
@@ -22,7 +22,7 @@ pnpm build:admin
 pnpm build:server
 ```
 
-Development requires Node.js 22.18+ or 24, pnpm 11, Java 17, Maven, MySQL 8 and Redis. Full verification uses disposable Docker containers. Initialize a fresh `gnilc_auth` database using the [SQL guide](apps/server/deploy/sql/README.md). Avatar values are optional URLs in the `avatar` field; object storage is not required.
+Development requires Node.js 22.18+ or 24, pnpm 11, Java 17, Maven, MySQL 8 and Redis. Full verification uses disposable Docker containers. Use the independent `baseline-2` schema for a fresh `gnilc_auth` database using the [SQL guide](apps/server/deploy/sql/README.md). Avatar values are optional URLs in the `avatar` field; object storage is not required.
 
 [Domain glossary](CONTEXT.md) · [Architecture decisions](docs/adr/README.md) · [Testing](docs/test/test-strategy.md)
 

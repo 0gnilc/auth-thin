@@ -11,7 +11,6 @@ import com.gnilc.auth.authz.rbac.service.MenuService;
 import com.gnilc.auth.authz.rbac.service.RoleMenuService;
 import com.gnilc.auth.authz.rbac.service.RoleService;
 import com.gnilc.common.base.Preconditions;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.google.common.collect.Sets;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,23 +24,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 /** 以完整祖先闭包替换角色菜单绑定，并发布对应导航授权变化事件。 */
 @Service("roleMenuServiceImpl")
 public class RoleMenuServiceImpl extends ServiceImpl<RoleMenusDao, RoleMenuBo> implements RoleMenuService {
     private final MenuService menuService;
     private final RoleService roleService;
     private final ApplicationEventPublisher eventPublisher;
-    private final I18nMessageService messages;
 
     public RoleMenuServiceImpl(@Lazy MenuService menuService,
                                RoleService roleService,
-                               ApplicationEventPublisher eventPublisher,
-                               I18nMessageService messages) {
+                               ApplicationEventPublisher eventPublisher) {
         this.menuService = menuService;
         this.roleService = roleService;
         this.eventPublisher = eventPublisher;
-        this.messages = messages;
     }
 
     @Override
@@ -75,17 +70,17 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenusDao, RoleMenuBo> i
     @Transactional
     @Override
     public void saveRoleMenus(RoleMenuDto dto) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.assignment.roleMenu.required"));
+        Preconditions.checkArgument(dto != null, "角色菜单分配信息不能为空。");
         Long roleId = dto.getRoleId();
         List<Long> menuIds = dto.getMenuIds();
-        Preconditions.checkArgument(roleId != null, messages.get("rbac.role.selection.required"));
+        Preconditions.checkArgument(roleId != null, "请选择角色。");
         RoleBo role = roleService.getById(roleId);
-        Preconditions.checkCondition(role != null, messages.get("rbac.role.notFound"));
+        Preconditions.checkCondition(role != null, "角色已不存在，请刷新后重试。");
         Preconditions.checkCondition(!Boolean.TRUE.equals(role.getBuiltIn()),
-                messages.get("rbac.role.builtIn.assignments"));
+                "内置角色的权限和菜单不能修改。");
         Preconditions.checkArgument(CollectionUtils.isEmpty(menuIds)
                         || menuIds.stream().noneMatch(Objects::isNull),
-                messages.get("rbac.menu.selection.required"));
+                "请选择菜单。");
 
         Set<Long> oldSet = lambdaQuery()
                 .select(RoleMenuBo::getMenuId)

@@ -4,8 +4,6 @@ import { computed, ref } from 'vue';
 import { Profile } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import { $t } from '#/locales';
-
 import ProfileBase from './base-setting.vue';
 import ProfilePasswordSetting from './password-setting.vue';
 
@@ -15,11 +13,11 @@ const tabsValue = ref<string>('basic');
 
 const tabs = computed(() => [
   {
-    label: $t('profile.tabs.basic'),
+    label: '基本设置',
     value: 'basic',
   },
   {
-    label: $t('profile.tabs.password'),
+    label: '修改密码',
     value: 'password',
   },
 ]);
@@ -27,7 +25,7 @@ const tabs = computed(() => [
 <template>
   <Profile
     v-model:model-value="tabsValue"
-    :title="$t('profile.title')"
+    title="个人中心"
     :user-info="userStore.userInfo"
     :tabs="tabs"
   >

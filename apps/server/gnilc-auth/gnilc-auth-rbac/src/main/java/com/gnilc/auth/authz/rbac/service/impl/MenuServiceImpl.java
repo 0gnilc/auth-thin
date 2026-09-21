@@ -16,7 +16,6 @@ import com.gnilc.auth.authz.rbac.service.MenuService;
 import com.gnilc.auth.authz.rbac.service.RoleMenuService;
 import com.gnilc.common.base.Preconditions;
 import com.gnilc.common.exception.InvalidArgumentException;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.common.utils.HttpUrlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -37,7 +36,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 /** 维护菜单合法层级和资源保护规则，并从已授权菜单构建可达的导航树。 */
 @Service("menuService")
 public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements MenuService {
@@ -49,18 +47,15 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
     private final RoleMenuService roleMenuService;
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
-    private final I18nMessageService messages;
 
     public MenuServiceImpl(MenuDao menuDao,
                            RoleMenuService roleMenuService,
                            ApplicationEventPublisher eventPublisher,
-                           ObjectMapper objectMapper,
-                           I18nMessageService messages) {
+                           ObjectMapper objectMapper) {
         this.menuDao = menuDao;
         this.roleMenuService = roleMenuService;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
-        this.messages = messages;
     }
 
     @Override
@@ -92,7 +87,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
     @Override
     @Transactional
     public void createMenu(MenuDto dto) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.menu.information.required"));
+        Preconditions.checkArgument(dto != null, "菜单信息不能为空。");
         MenuBo bo = new MenuBo();
         BeanUtils.copyProperties(dto, bo);
         bo.setBuiltIn(Boolean.FALSE);
@@ -107,16 +102,16 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
     @Override
     @Transactional
     public void updateMenu(MenuDto dto) {
-        Preconditions.checkArgument(dto != null, messages.get("rbac.menu.information.required"));
+        Preconditions.checkArgument(dto != null, "菜单信息不能为空。");
         Long menuId = dto.getId();
-        Preconditions.checkArgument(menuId != null, messages.get("rbac.menu.selection.required"));
+        Preconditions.checkArgument(menuId != null, "请选择菜单。");
         MenuBo menu = getById(menuId);
-        Preconditions.checkArgument(menu != null, messages.get("rbac.menu.notFound"));
+        Preconditions.checkArgument(menu != null, "菜单已不存在，请刷新后重试。");
         Preconditions.checkCondition(!Boolean.TRUE.equals(menu.getBuiltIn()),
-                messages.get("rbac.menu.builtIn.modify"));
-        Preconditions.checkArgument(dto.getType() != null, messages.get("rbac.menu.type.required"));
+                "内置菜单不能修改。");
+        Preconditions.checkArgument(dto.getType() != null, "请选择菜单类型。");
         Preconditions.checkCondition(Objects.equals(dto.getType(), menu.getType()),
-                messages.get("rbac.menu.type.immutable"));
+                "菜单类型创建后不能修改。");
         BeanUtils.copyProperties(dto, menu);
         validateMenu(menu);
         updateById(menu);
@@ -127,16 +122,16 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
     @Transactional
     @Override
     public void removeMenu(Long id) {
-        Preconditions.checkArgument(id != null, messages.get("rbac.menu.selection.required"));
+        Preconditions.checkArgument(id != null, "请选择菜单。");
         MenuBo bo = getById(id);
-        Preconditions.checkArgument(bo != null, messages.get("rbac.menu.notFound"));
+        Preconditions.checkArgument(bo != null, "菜单已不存在，请刷新后重试。");
         Preconditions.checkCondition(!Boolean.TRUE.equals(bo.getBuiltIn()),
-                messages.get("rbac.menu.builtIn.delete"));
+                "内置菜单不能删除。");
         List<Long> menuIds = getSubtreeIds(id);
         List<MenuBo> subtree = getMenus(menuIds);
         Preconditions.checkCondition(subtree.stream()
                         .noneMatch(menu -> Boolean.TRUE.equals(menu.getBuiltIn())),
-                messages.get("rbac.menu.builtIn.descendant.delete"));
+                "该菜单包含内置菜单，无法删除。");
         subtree.forEach(menu -> {
             String suffix = "_del_" + menu.getId();
             menu.setName(menu.getName() + suffix);
@@ -198,12 +193,12 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
                 continue;
             }
             if (hierarchy.isEmpty()) {
-                throw new InvalidArgumentException(messages.get("rbac.menu.selected.notFound"));
+                throw new InvalidArgumentException("所选菜单已不存在，请刷新后重试。");
             }
             if (menu == null) {
-                throw new InvalidArgumentException(messages.get("rbac.menu.selectedHierarchy.incomplete"));
+                throw new InvalidArgumentException("所选菜单层级不完整。");
             }
-            throw new InvalidArgumentException(messages.get("rbac.menu.selectedHierarchy.invalid"));
+            throw new InvalidArgumentException("所选菜单层级无效。");
         }
 
         return result.values().stream()
@@ -282,76 +277,76 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
         String accessCode = bo.getAccessCode();
         String iframeSrc = bo.getIframeSrc();
         String link = bo.getLink();
-        Preconditions.checkArgument(type != null, messages.get("rbac.menu.type.required"));
-        Preconditions.checkArgument(pid != null, messages.get("rbac.menu.parent.selection.required"));
+        Preconditions.checkArgument(type != null, "请选择菜单类型。");
+        Preconditions.checkArgument(pid != null, "请选择父菜单。");
         validateParent(menuId, pid, type);
-        Preconditions.checkArgument(StringUtils.isNotBlank(name), messages.get("rbac.menu.name.required"));
-        Preconditions.checkArgument(StringUtils.isNotBlank(title), messages.get("rbac.menu.title.required"));
+        Preconditions.checkArgument(StringUtils.isNotBlank(name), "菜单名称不能为空。");
+        Preconditions.checkArgument(StringUtils.isNotBlank(title), "菜单标题不能为空。");
         Preconditions.checkArgument(name.codePointCount(0, name.length()) <= 255,
-                messages.get("rbac.menu.name.tooLong", 255));
+                "菜单名称不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(title.codePointCount(0, title.length()) <= 255,
-                messages.get("rbac.menu.title.tooLong", 255));
+                "菜单标题不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(accessCode == null || accessCode.codePointCount(0, accessCode.length()) <= 255,
-                messages.get("rbac.menu.accessCode.tooLong", 255));
+                "按钮权限码不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(path == null || path.codePointCount(0, path.length()) <= 500,
-                messages.get("rbac.menu.path.tooLong", 500));
+                "路由路径不能超过 %s 个字符。".formatted(500));
         Preconditions.checkArgument(component == null || component.codePointCount(0, component.length()) <= 255,
-                messages.get("rbac.menu.component.tooLong", 255));
+                "组件路径不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(bo.getRedirect() == null
                         || bo.getRedirect().codePointCount(0, bo.getRedirect().length()) <= 500,
-                messages.get("rbac.menu.redirect.tooLong", 500));
+                "重定向路径不能超过 %s 个字符。".formatted(500));
         Preconditions.checkArgument(bo.getActivePath() == null
                         || bo.getActivePath().codePointCount(0, bo.getActivePath().length()) <= 500,
-                messages.get("rbac.menu.activePath.tooLong", 500));
+                "激活菜单路径不能超过 %s 个字符。".formatted(500));
         Preconditions.checkArgument(bo.getBadge() == null
                         || bo.getBadge().codePointCount(0, bo.getBadge().length()) <= 100,
-                messages.get("rbac.menu.badge.tooLong", 100));
+                "徽标内容不能超过 %s 个字符。".formatted(100));
         Preconditions.checkArgument(bo.getBadgeType() == null
                         || bo.getBadgeType().codePointCount(0, bo.getBadgeType().length()) <= 16,
-                messages.get("rbac.menu.badgeType.tooLong", 16));
+                "徽标类型不能超过 %s 个字符。".formatted(16));
         Preconditions.checkArgument(bo.getBadgeVariants() == null
                         || bo.getBadgeVariants().codePointCount(0, bo.getBadgeVariants().length()) <= 32,
-                messages.get("rbac.menu.badgeVariants.tooLong", 32));
+                "徽标样式不能超过 %s 个字符。".formatted(32));
         Preconditions.checkArgument(bo.getIcon() == null
                         || bo.getIcon().codePointCount(0, bo.getIcon().length()) <= 255,
-                messages.get("rbac.menu.icon.tooLong", 255));
+                "图标不能超过 %s 个字符。".formatted(255));
         Preconditions.checkArgument(iframeSrc == null || iframeSrc.codePointCount(0, iframeSrc.length()) <= 500,
-                messages.get("rbac.menu.iframeSrc.tooLong", 500));
+                "内嵌页面 URL 不能超过 %s 个字符。".formatted(500));
         Preconditions.checkArgument(link == null || link.codePointCount(0, link.length()) <= 500,
-                messages.get("rbac.menu.link.tooLong", 500));
+                "外链 URL 不能超过 %s 个字符。".formatted(500));
         switch (type) {
             case CATALOG ->
-                    Preconditions.checkArgument(StringUtils.isNotBlank(path), messages.get("rbac.menu.path.required"));
+                    Preconditions.checkArgument(StringUtils.isNotBlank(path), "路由路径不能为空。");
             case MENU -> {
-                Preconditions.checkArgument(StringUtils.isNotBlank(path), messages.get("rbac.menu.path.required"));
+                Preconditions.checkArgument(StringUtils.isNotBlank(path), "路由路径不能为空。");
                 Preconditions.checkArgument(StringUtils.isNotBlank(component),
-                        messages.get("rbac.menu.component.required"));
+                        "页面组件不能为空。");
             }
             case BUTTON -> Preconditions.checkArgument(StringUtils.isNotBlank(accessCode),
-                    messages.get("rbac.menu.accessCode.required"));
+                    "权限码不能为空。");
             case EMBEDDED -> {
-                Preconditions.checkArgument(StringUtils.isNotBlank(path), messages.get("rbac.menu.path.required"));
+                Preconditions.checkArgument(StringUtils.isNotBlank(path), "路由路径不能为空。");
                 Preconditions.checkArgument(StringUtils.isNotBlank(iframeSrc),
-                        messages.get("rbac.menu.iframeSrc.required"));
+                        "内嵌页面地址不能为空。");
                 Preconditions.checkArgument(HttpUrlUtils.isValid(iframeSrc),
-                        messages.get("rbac.menu.iframeSrc.invalid"));
+                        "内嵌页面地址必须是完整的 http 或 https URL。");
             }
             case LINK -> {
-                Preconditions.checkArgument(StringUtils.isNotBlank(path), messages.get("rbac.menu.path.required"));
-                Preconditions.checkArgument(StringUtils.isNotBlank(link), messages.get("rbac.menu.link.required"));
+                Preconditions.checkArgument(StringUtils.isNotBlank(path), "路由路径不能为空。");
+                Preconditions.checkArgument(StringUtils.isNotBlank(link), "外部链接不能为空。");
                 Preconditions.checkArgument(HttpUrlUtils.isValid(link),
-                        messages.get("rbac.menu.link.invalid"));
+                        "外部链接必须是完整的 http 或 https URL。");
             }
         }
         MenuBo nameBo = getMenuByName(name);
         Preconditions.checkArgument(nameBo == null || Objects.equals(nameBo.getId(), menuId),
-                messages.get("rbac.menu.name.exists"));
+                "已存在使用该名称的菜单。");
         MenuBo pathBo = getMenuByPath(path);
         Preconditions.checkArgument(pathBo == null || Objects.equals(pathBo.getId(), menuId),
-                messages.get("rbac.menu.path.exists"));
+                "已存在使用该路由路径的菜单。");
         MenuBo accessBo = getMenuByAccessCode(accessCode);
         Preconditions.checkArgument(accessBo == null || Objects.equals(accessBo.getId(), menuId),
-                messages.get("rbac.menu.accessCode.exists"));
+                "已存在使用该权限码的菜单。");
     }
 
     /**
@@ -360,27 +355,27 @@ public class MenuServiceImpl extends ServiceImpl<MenuDao, MenuBo> implements Men
     private void validateParent(Long menuId, Long pid, MenuType childType) {
         if (Objects.equals(pid, MenuConstant.ROOT_PARENT_ID)) {
             Preconditions.checkArgument(childType != MenuType.BUTTON,
-                    messages.get("rbac.menu.root.button.unsupported"));
+                    "按钮不能直接放在根节点下。");
             return;
         }
         MenuBo parent = getById(pid);
         Preconditions.checkArgument(parent != null,
-                messages.get("rbac.menu.parent.notFound"));
+                "父菜单已不存在，请选择其他菜单。");
         Preconditions.checkArgument(allowsChild(parent.getType(), childType),
-                messages.get("rbac.menu.parent.type.invalid"));
+                "所选父菜单不能包含该菜单类型。");
         Set<Long> visited = new HashSet<>();
         // 从候选父节点回溯到根节点；途中遇到当前菜单即表示会形成父子环。
         while (true) {
             Preconditions.checkArgument(visited.add(parent.getId()),
-                    messages.get("rbac.menu.parentHierarchy.invalid"));
+                    "父菜单层级无效。");
             Preconditions.checkArgument(!Objects.equals(parent.getId(), menuId),
-                    messages.get("rbac.menu.parent.cycle"));
+                    "不能将菜单自身或其子菜单设为父菜单。");
             if (Objects.equals(parent.getPid(), MenuConstant.ROOT_PARENT_ID)) {
                 return;
             }
             parent = getById(parent.getPid());
             Preconditions.checkArgument(parent != null,
-                    messages.get("rbac.menu.parentHierarchy.incomplete"));
+                    "父菜单层级不完整。");
         }
     }
 

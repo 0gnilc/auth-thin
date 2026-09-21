@@ -19,7 +19,6 @@ import {
   saveAdminRoles,
   updateAdmin,
 } from '#/api/system';
-import { $t } from '#/locales';
 
 import ChecklistDrawer from '../components/checklist-drawer.vue';
 import Form from './components/form.vue';
@@ -106,9 +105,9 @@ function onRoles(row: AdminApi.Admin) {
       await saveAdminRoles(row.id, [
         ...new Set([ADMIN_ROLE_CODE, ...selected]),
       ]);
-      ElMessage.success($t('systemAdmin.messages.rolesSuccess'));
+      ElMessage.success('角色分配已保存');
     },
-    title: $t('systemAdmin.drawer.rolesTitle', { name: row.username }),
+    title: `为“${row.username}”分配角色`,
   };
   rolesDrawerApi.setData(data).open();
 }
@@ -117,15 +116,12 @@ async function onStatusChange(status: boolean, row: AdminApi.Admin) {
   if (isCurrentAdmin(row)) return false;
   try {
     await ElMessageBox.confirm(
-      $t('systemAdmin.messages.statusConfirm', {
-        name: row.username,
-        status: status ? $t('rbacCommon.enabled') : $t('rbacCommon.disabled'),
-      }),
-      $t('systemAdmin.messages.statusTitle'),
+      `确定将“${row.username}”设为${status ? '启用' : '禁用'}吗？`,
+      '修改启用状态',
       { type: 'warning' },
     );
     await updateAdmin({ id: row.id, status });
-    ElMessage.success($t('systemAdmin.messages.statusSuccess'));
+    ElMessage.success('启用状态已更新');
     return true;
   } catch {
     return false;
@@ -134,11 +130,11 @@ async function onStatusChange(status: boolean, row: AdminApi.Admin) {
 
 async function onDelete(row: AdminApi.Admin) {
   if (isCurrentAdmin(row)) {
-    ElMessage.warning($t('systemAdmin.messages.currentProtected'));
+    ElMessage.warning('不能删除当前后台管理员');
     return;
   }
   await removeAdmin(row.id);
-  ElMessage.success($t('systemAdmin.messages.removeSuccess'));
+  ElMessage.success('后台管理员已删除');
   await gridApi.query();
 }
 
@@ -151,7 +147,7 @@ function refresh() {
   <Page auto-content-height>
     <FormDrawer @success="refresh" />
     <RolesDrawer @success="refresh" />
-    <Grid :table-title="$t('systemAdmin.title')">
+    <Grid table-title="后台管理员">
       <template #toolbar-tools>
         <VbenButton
           v-access:code="'system:admin:create'"
@@ -159,7 +155,7 @@ function refresh() {
           @click="onCreate"
         >
           <IconifyIcon icon="lucide:plus" class="mr-2 size-4" />
-          {{ $t('systemAdmin.actions.create') }}
+          新增后台管理员
         </VbenButton>
       </template>
 
@@ -190,11 +186,7 @@ function refresh() {
               </button>
             </template>
             <div class="text-muted-foreground mb-2 text-xs">
-              {{
-                $t('systemAdmin.table.roleCount', {
-                  count: row.roleCodes.length,
-                })
-              }}
+              {{ `共 ${row.roleCodes.length} 个角色` }}
             </div>
             <div class="flex max-w-full flex-wrap gap-1.5">
               <ElTag
@@ -215,12 +207,12 @@ function refresh() {
           :actions="[
             {
               auth: 'system:admin:update',
-              text: $t('rbacCommon.edit'),
+              text: '修改',
               onClick: () => onEdit(row),
             },
             {
               auth: 'system:admin:manage-roles',
-              text: $t('systemAdmin.actions.roles'),
+              text: '分配角色',
               onClick: () => onRoles(row),
             },
           ]"
@@ -229,11 +221,9 @@ function refresh() {
               auth: 'system:admin:remove',
               danger: true,
               disabled: isCurrentAdmin(row),
-              text: $t('rbacCommon.remove'),
+              text: '删除',
               popConfirm: {
-                title: $t('systemAdmin.messages.removeConfirm', {
-                  name: row.username,
-                }),
+                title: `确定删除后台管理员“${row.username}”吗？`,
                 confirm: () => onDelete(row),
               },
             },

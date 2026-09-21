@@ -20,7 +20,6 @@ import com.gnilc.common.exception.IllegalConditionException;
 import com.gnilc.common.exception.InvalidArgumentException;
 import com.gnilc.common.exception.AuthenticationFailedException;
 import com.gnilc.common.exception.UnauthorizedException;
-import com.gnilc.common.i18n.I18nMessageService;
 import com.gnilc.core.admin.cache.AdminCacheService;
 import com.gnilc.core.admin.dao.AdminDao;
 import com.gnilc.core.admin.entity.bo.AdminBo;
@@ -44,15 +43,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -107,11 +103,6 @@ class AdminServiceTest {
                     new MapperBuilderAssistant(new MybatisConfiguration(), "admin-service-test"),
                     AdminBo.class);
         }
-        LocaleContextHolder.setLocale(Locale.US);
-        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
-        source.setBasenames("i18n/rbac/messages", "i18n/system/messages");
-        source.setDefaultEncoding("UTF-8");
-        I18nMessageService messages = new I18nMessageService(source, "en-US");
         admins = spy(new AdminServiceImpl(
                 sessions,
                 cacheService,
@@ -121,8 +112,7 @@ class AdminServiceTest {
                 users,
                 userRoles,
                 eventPublisher,
-                new UserContextService(messages),
-                messages));
+                new UserContextService()));
         lenient().when(cacheService.getUserInfo(any(), any()))
                 .thenAnswer(invocation -> ((Supplier<AdminVo>) invocation.getArgument(1)).get());
         lenient().when(cacheService.getRoleCodes(any(), any()))
@@ -139,7 +129,6 @@ class AdminServiceTest {
     @AfterEach
     void tearDown() {
         RequestContextHolder.resetRequestAttributes();
-        LocaleContextHolder.resetLocaleContext();
     }
 
     @Test
@@ -159,22 +148,22 @@ class AdminServiceTest {
     void loginRejectsInvalidCredentialsAndDisabledAdmins() {
         assertThatThrownBy(() -> admins.login(null, "Initial#123"))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
         assertThatThrownBy(() -> admins.login("admin", " "))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
 
         AdminBo admin = currentAdmin();
         admin.setStatus(false);
         doReturn(admin).when(admins).getAdminByUsername("admin");
         assertThatThrownBy(() -> admins.login("admin", "Initial#123"))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
 
         admin.setStatus(true);
         assertThatThrownBy(() -> admins.login("admin", "wrong"))
                 .isInstanceOf(AuthenticationFailedException.class)
-                .hasMessage("Incorrect username or password.");
+                .hasMessage("用户名或密码错误。");
         verify(sessions, never()).createSession(any());
     }
 
@@ -212,10 +201,10 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.refresh(" "))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
         assertThatThrownBy(() -> admins.refresh("invalid"))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Your login has expired. Please sign in again.");
+                .hasMessage("登录已过期，请重新登录。");
     }
 
     @Test
@@ -224,10 +213,10 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.logout(null))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Unauthorized.");
+                .hasMessage("未认证。");
         assertThatThrownBy(() -> admins.logout("invalid"))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Unauthorized.");
+                .hasMessage("未认证。");
     }
 
     @Test
@@ -270,19 +259,19 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.updateProfile(profile))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Nickname must be at most 255 characters.");
+                .hasMessage("昵称长度不能超过 255 个字符。");
 
         profile.setNickname("Admin");
         profile.setAvatar("a".repeat(501));
         assertThatThrownBy(() -> admins.updateProfile(profile))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Avatar URL must be at most 500 characters.");
+                .hasMessage("头像 URL 长度不能超过 500 个字符。");
 
         profile.setAvatar(null);
         profile.setDesc("d".repeat(501));
         assertThatThrownBy(() -> admins.updateProfile(profile))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Description must be at most 500 characters.");
+                .hasMessage("个人简介长度不能超过 500 个字符。");
         verify(adminDao, never()).update(isNull(), any());
     }
 
@@ -293,7 +282,7 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.updateProfile(profile))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Nickname format is invalid.");
+                .hasMessage("昵称格式无效。");
 
         verify(adminDao, never()).update(isNull(), any());
     }
@@ -317,8 +306,7 @@ class AdminServiceTest {
     }
 
     @Test
-    void updateProfileUsesTheRequestLocaleForValidationErrors() {
-        LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
+    void updateProfileUsesChineseValidationErrors() {
         AdminDto profile = new AdminDto();
         profile.setNickname("n".repeat(256));
 
@@ -352,7 +340,7 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.updatePassword("Wrong#123", "Changed#456"))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Current password is incorrect.");
+                .hasMessage("当前密码错误。");
         verify(adminDao, never()).update(isNull(), any());
         verify(sessions, never()).cleanupUserSessions(any());
     }
@@ -399,13 +387,13 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.getAdminPage(query))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Username format is invalid.");
+                .hasMessage("用户名格式无效。");
 
         query.setUsername(null);
         query.setNickname(" Invalid Nickname ");
         assertThatThrownBy(() -> admins.getAdminPage(query))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Nickname format is invalid.");
+                .hasMessage("昵称格式无效。");
     }
 
     @Test
@@ -435,7 +423,7 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.updateAdmin(update))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The current administrator cannot disable itself.");
+                .hasMessage("当前管理员不能禁用自己。");
         verify(admins, never()).updateById(any());
     }
 
@@ -473,7 +461,7 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.createAdmin(create))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("Nickname format is invalid.");
+                .hasMessage("昵称格式无效。");
         verify(users, never()).createUser();
     }
 
@@ -484,7 +472,7 @@ class AdminServiceTest {
 
         assertThatThrownBy(() -> admins.removeAdmin(ADMIN_ID))
                 .isInstanceOf(IllegalConditionException.class)
-                .hasMessage("The current administrator cannot delete itself.");
+                .hasMessage("当前管理员不能删除自己。");
         verify(sessions, never()).cleanupUserSessions(any());
         verify(admins, never()).removeById(ADMIN_ID);
     }

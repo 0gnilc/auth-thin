@@ -3,7 +3,6 @@ package com.gnilc.auth.authz.rbac.entity.dto;
 import com.gnilc.auth.authz.rbac.entity.enums.MenuType;
 import lombok.Data;
 
-
 /** 创建或更新菜单的输入；更新时必须指定菜单 ID，已有菜单类型不能改变。 */
 @Data
 public class MenuDto {
@@ -95,6 +94,6 @@ public class MenuDto {
     /** 导航时附带的查询参数，以 JSON 对象文本保存。 */
     private String query;
 
-    /** 菜单显示标题，可使用对应的本地化消息键。 */
+    /** 菜单显示标题，直接展示存储的文本。 */
     private String title;
 }

@@ -12,7 +12,6 @@ import { ElMessage } from 'element-plus';
 import { confirmDiscardChanges } from '#/adapter/confirm-discard-changes';
 import { useVbenForm } from '#/adapter/form';
 import { createRole, updateRole } from '#/api/system';
-import { $t } from '#/locales';
 
 const emit = defineEmits<{ success: [] }>();
 
@@ -31,20 +30,20 @@ const schema: VbenFormSchema[] = [
   {
     component: 'Input',
     fieldName: 'code',
-    label: $t('systemRole.form.code'),
+    label: '角色标识',
     rules: 'required',
   },
   {
     component: 'Input',
     fieldName: 'name',
-    label: $t('systemRole.form.name'),
+    label: '角色名称',
     rules: 'required',
   },
   {
     component: 'Input',
     componentProps: { rows: 4, type: 'textarea' },
     fieldName: 'remark',
-    label: $t('systemRole.form.remark'),
+    label: '描述',
   },
 ];
 
@@ -78,7 +77,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         ? updateRole({ id: values.id, ...data })
         : createRole(data));
       saved.value = true;
-      ElMessage.success($t('systemRole.messages.saveSuccess'));
+      ElMessage.success('角色已保存');
       emit('success');
       await drawerApi.close();
     } finally {
@@ -96,9 +95,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       remark: row.remark ?? '',
     };
     drawerApi.setState({
-      title: row.id
-        ? $t('systemRole.drawer.editTitle')
-        : $t('systemRole.drawer.createTitle'),
+      title: row.id ? '修改角色' : '新增角色',
     });
     await formApi.reset();
     await nextTick();
