@@ -1,6 +1,8 @@
-# gnilc-auth
+# auth-thin
 
-`standard` 是基于 Vue 3 / Vben / Element Plus 与 Spring Boot 3 的简体中文单语言脚手架。
+`auth-thin` 是基于 Vue 3 / Vben / Element Plus 与 Spring Boot 3 的简体中文单语言脚手架。
+
+项目从 Gnilc Auth 的 `standard` 分支提取，使用 `main` 作为主分支。
 
 保留管理员登录、刷新、注销、个人资料和密码修改、管理员管理、RBAC 角色/权限/菜单管理。认证、授权、拒绝处理、Redis 会话和缓存采用当前项目实现。
 

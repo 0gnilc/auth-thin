@@ -1,6 +1,8 @@
-# gnilc-auth
+# auth-thin
 
-The `standard` branch is a Simplified Chinese scaffold for administrator authentication and authorization workspace built with Vue 3, Vben, Element Plus, Spring Boot 3, MySQL and Redis.
+Auth Thin is a standalone Simplified Chinese scaffold for administrator authentication and authorization built with Vue 3, Vben, Element Plus, Spring Boot 3, MySQL and Redis.
+
+The project was extracted from the `standard` branch of Gnilc Auth and is maintained on `main`.
 
 It includes administrator sessions, profiles and password changes, administrator management, RBAC roles/permissions/menus. The application uses the current authentication, authorization, rejection handling and cache implementations.
 

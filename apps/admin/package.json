@@ -2,11 +2,11 @@
   "name": "@app/admin",
   "version": "1.0.0-rc.1",
   "private": true,
-  "homepage": "https://github.com/0gnilc/auth",
-  "bugs": "https://github.com/0gnilc/auth/issues",
+  "homepage": "https://github.com/0gnilc/auth-thin",
+  "bugs": "https://github.com/0gnilc/auth-thin/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/0gnilc/auth.git",
+    "url": "git+https://github.com/0gnilc/auth-thin.git",
     "directory": "apps/admin"
   },
   "license": "MIT",

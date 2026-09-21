@@ -1,5 +1,5 @@
 {
-  "name": "gnilc-auth",
+  "name": "auth-thin",
   "version": "1.0.0-rc.1",
   "private": true,
   "keywords": [
@@ -14,9 +14,9 @@
     "vue3",
     "auth"
   ],
-  "homepage": "https://github.com/0gnilc/auth",
-  "bugs": "https://github.com/0gnilc/auth/issues",
-  "repository": "0gnilc/auth.git",
+  "homepage": "https://github.com/0gnilc/auth-thin",
+  "bugs": "https://github.com/0gnilc/auth-thin/issues",
+  "repository": "0gnilc/auth-thin.git",
   "license": "MIT",
   "author": {
     "name": "gnil"
